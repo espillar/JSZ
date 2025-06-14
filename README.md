@@ -2,6 +2,8 @@
 
 JSZ4 is a simple, self-contained Zettelkasten system that runs entirely in your web browser. It uses HTML, CSS, and JavaScript to provide a personal note-taking environment following the Zettelkasten methodology.
 
+Test
+
 ## Core Features
 
 *   **Create and Edit Notes (Zettels):** Easily create new Zettels and edit existing ones. Each Zettel has a unique key, a name, content, creation date, and links.
