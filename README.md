@@ -70,3 +70,9 @@ The project consists of three main files:
     *   Visual feedback for operations (e.g., saving, loading) could be clearer.
 *   **Rich Text Editing:** Currently, content is plain text. A Markdown editor or other rich text capabilities could be a valuable addition.
 *   **No Server-Side Component:** JSZ4 is entirely client-side. This means all data is stored and processed in the browser or through manual file downloads/uploads. There's no central server or automatic cloud synchronization.
+
+## Sample Data
+
+A sample Zettelkasten file named `sample_zettelkasten.json` is included in this repository. It contains 100 sample notes with placeholder content and randomly generated interlinks.
+
+You can load this file into the application using the "Load JSON File" button to explore the features and see an example of a populated Zettelkasten.
