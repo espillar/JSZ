@@ -5,8 +5,8 @@ JSZ4 is a simple, self-contained Zettelkasten system that runs entirely in your 
 ## Core Features
 
 *   **Create and Edit Notes (Zettels):** Easily create new Zettels and edit existing ones. Each Zettel has a unique key, a name, content, creation date, and links.
-*   **Linking:** Connect Zettels using `[[link_key]]` syntax within the content.
-*   **Automatic Backlinks:** The system automatically identifies and displays backlinks, showing which other Zettels link to the current one.
+*   **Linking:** Connect Zettels using `[[link_key]]` syntax, or link to external URLs/files using `<<URL_or_filename>>` syntax within the content.
+*   **Automatic Backlinks:** The system automatically identifies and displays backlinks (for `[[link_key]]` style links), showing which other Zettels link to the current one.
 *   **Save and Load:** Persist your entire Zettelkasten by downloading it as a JSON file (`zettelkasten.json`). You can later load this file to resume your work.
 *   **Search:** Find Zettels by searching their names using regular expressions.
 *   **Full-Text Content Search:** Search within the content of all Zettels for specific terms.
@@ -33,7 +33,8 @@ The project consists of three main files:
         *   `Date Created`: Shows the creation date of the Zettel.
         *   `Zettels zettel count`: Displays the total number of Zettels. (Field width increased)
         *   `parse & load fields`: Click this button after editing Zettel fields (like key, name, content) to save the changes to the current Zettel in memory.
-    *   **Zettel Content:** The large text area is where you write the main content of your Zettel. Use `[[link_key]]` to create links to other Zettels.
+    *   **Zettel Content:** The large text area is where you write the main content of your Zettel. Use `[[link_key]]` to create links to other Zettels. You can also include external URLs or file references using the `<<URL_or_filename>>` syntax (e.g., `<<https://www.example.com>>` or `<<my_document.pdf>>`).
+        *   **Note on local file links** (e.g., `<<my_document.pdf>>` or `<<file:///path/to/file>>`): Due to browser security restrictions, directly opening local file paths from a web page may not work as expected unless the Zettelkasten HTML file itself is being viewed as a local file (via `file:///` protocol) and the links are relative or absolute `file:///` URLs. For web URLs (`http://`, `https://`), links should open in a new tab.
     *   **Saving and Loading:**
         *   `set browser store`: Saves the current state of your Zettelkasten to the browser's local storage.
         *   `load browser store`: Loads the Zettelkasten from local storage.
@@ -49,7 +50,7 @@ The project consists of three main files:
         Search results appear in the 'Search Results' area below.
     *   **Link Panes:**
         *   `Incoming links`: Displays Zettels that link to the currently viewed Zettel.
-        *   `Outgoing links`: Displays Zettels that the current Zettel links to.
+        *   `Outgoing links`: Displays Zettels that the current Zettel links to, and also any external/file links (`<<URL_or_filename>>`) found in its content. External/file links will typically open in a new browser tab when clicked.
 3.  **Creating a New Zettel:**
     *   Type a new, unique key in the `Zettel Name` field (this serves as the ID).
     *   Optionally, add tags in the `Tags` field.

@@ -146,6 +146,39 @@ function makeJumpButton(str,tofield){
     element.appendChild(newElem);
 }
 
+function makeExternalLinkButton(url, tofield) {
+    let btn = document.createElement("A"); // Create an anchor tag
+    btn.href = url;
+
+    // To make it more likely to be a valid URL if it doesn't start with a scheme
+    if (!url.match(/^([a-zA-Z]+:)/)) { // Regex to check for scheme like http: mailto: etc.
+        // If no scheme, assume http for web links, or leave as is for potential file links
+        // For typical web URLs, prefixing with '//' can work if scheme is missing (protocol-relative)
+        // or default to 'http://'
+        // However, for file names like "my_document.pdf", prefixing http is wrong.
+        // For now, let's keep it simple: if it looks like a web URL missing a scheme, add '//'.
+        // A more robust solution might involve more complex URL parsing or type detection.
+        if (url.startsWith("www.") || (url.includes(".") && !url.includes(" ") && !url.startsWith("file:") && !url.startsWith("/"))) {
+            // Heuristic: if it starts with www. or contains a dot (common in hostnames)
+            // and no spaces (unlike filenames sometimes) and not explicitly a file scheme or absolute path
+             if(!url.startsWith("//")) btn.href = "//" + url; // Make it protocol-relative if it seems like a web address
+        }
+    }
+
+    btn.textContent = url; // Display the URL as the link text
+    btn.title = "Open: " + url; // Tooltip
+    btn.target = "_blank"; // Open in a new tab
+    btn.style.display = "block"; // Make each link appear on a new line for clarity
+    btn.style.color = "#2AA198"; // Using a color from the Solarized palette for visibility, similar to other links
+
+    let element = document.getElementById(tofield);
+    if (element) { // Ensure the target element exists
+        element.appendChild(btn);
+    } else {
+        console.error("makeExternalLinkButton: Target element '" + tofield + "' not found.");
+    }
+}
+
 // *******************************************************************
 // General javascript tools
 
@@ -292,7 +325,8 @@ function makeEmpty(key) {
     ZettelkastenApp.data.zettel[key] = {
         "name" : key, 
         "content": '\n \n [[' + dateString + ']]', 
-        "links": [new Date().toISOString().substring(0, 10)], 
+        "links": [new Date().toISOString().substring(0, 10)],
+        "fileLinks": [], // New property
         "backlinks": [ZettelkastenApp.data.currentKey],
         "creation" : dateString};
     
@@ -354,10 +388,29 @@ var showObj = function(key) {
         for (x of ZettelkastenApp.data.zettel[key].links)
             {  makeJumpButton(x, "forwardbuttons") };
     };
+
+    // Show file/URL links
+    if (ZettelkastenApp.data.zettel[key].fileLinks && ZettelkastenApp.data.zettel[key].fileLinks.length > 0) {
+        // Optional: Add a visual separator if there were Zettel links displayed before this.
+        // This check ensures separator only appears if both types of links exist for a Zettel.
+        if (ZettelkastenApp.data.zettel[key].links && ZettelkastenApp.data.zettel[key].links.length > 0 && ZettelkastenApp.data.zettel[key].links[0] !== "nolinksout") { // Ensure not just ["nolinksout"]
+            let sep = document.createElement("HR");
+            sep.style.marginTop = "5px";
+            sep.style.marginBottom = "5px";
+            buttons.appendChild(sep); // 'buttons' still refers to document.getElementById("forwardbuttons")
+        }
+
+        for (let fileLink of ZettelkastenApp.data.zettel[key].fileLinks) {
+            if (fileLink !== "nolinksout") { // Ensure not to display "nolinksout"
+                makeExternalLinkButton(fileLink, "forwardbuttons");
+            }
+        }
+    }
+
 // Show the reverse buttons
-    var buttons = document.getElementById("reversebuttons");
-    while(buttons.firstChild){
-        buttons.removeChild(buttons.firstChild);
+    var reverseButtonsDiv = document.getElementById("reversebuttons"); // Use a different variable name to avoid confusion
+    while(reverseButtonsDiv.firstChild){
+        reverseButtonsDiv.removeChild(reverseButtonsDiv.firstChild);
     } 
     if ( (ZettelkastenApp.data.zettel[key].backlinks).length > 0 ) {
     for (x of ZettelkastenApp.data.zettel[key].backlinks)  {  makeJumpButton(x, "reversebuttons") };
@@ -421,13 +474,14 @@ var readObjNoShow = function() {
     if (ZettelkastenApp.data.zettel[zoro] != undefined)
         { revlinks = ZettelkastenApp.data.zettel[zoro].backlinks }; // Preserve existing backlinks if any
     var links = findLinks(zcontent);
-    var filelinks =  findFileLinks(zcontent); // Not currently used but parsed
+    var fileLinks = findFileLinks(zcontent); // Corrected variable name and ensures it's called
  //   var zlinks = document.getElementById("zlinks").value; 
  //   console.log(zlinks + " are the links");
  //   console.log(typeof(zlinks + " is the type")); 
     var nz = {"name" : zname, // In HTML, zname is tags, zkey is the name/key. This seems to map zname (tags) to the zettel's 'name' property
              "content": zcontent, 
-             "links": links, 
+             "links": links,
+             "fileLinks": fileLinks, // Added fileLinks property
              "backlinks" : revlinks,
             "creation" : creation };
  
@@ -572,7 +626,7 @@ function findLinks(aText) {
 function findFileLinks(aText) {
     console.log("scanning for text links");
     var links = aText.match(/\<\<.*?\>\>/g);
-    if (links == null) {return ["nolinksout"];};
+    if (links == null) {return [];}; // Changed from ["nolinksout"]
     var clean = function(str) { return str.substring(2,str.length - 2)};
     var links = links.map(clean);
     return links;
@@ -635,6 +689,7 @@ function parseAllZettels(){
 	let here = ZettelkastenApp.data.zettel[k];
 //	console.log(here);
 	here.links = findLinks(here.content);
+	here.fileLinks = findFileLinks(here.content); // Added this line
     };
 }
 
