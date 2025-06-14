@@ -1,0 +1,45 @@
+button {
+ background-color: #002b36; /* Green */
+  border: none;
+  color: #b58900;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+textarea {
+  border: rgb(162, 169, 233);
+  background-color: #002b36;
+  font-size: inherit;
+  font-family: inherit;
+  color: #93a1a1;
+  resize: true;
+}
+
+body {
+  font: 0.8em "Fira Sans", sans-serif;
+  background-color: 	#073642;
+  color:  #839496;
+}
+
+a { color:  #ffff00;}
+
+div { clear: none}
+
+h1 {
+  color: #859900;
+  margin-left: 2px;
+}
+
+.cols div { flex-grow: 1; }
+.cols { display: flex;  }
+
+.wrapper {
+    display: grid;
+    grid-template-columns: 275px 1fr 275px;
+}
+
+.custom-tooltip::before {
+    font-size: 14px; /* Adjust as needed */
+    /* Other tooltip styles here */
+}

@@ -1,0 +1,73 @@
+<html>
+<head>
+  <script src="jsz4.js"> </script>  
+  <link rel="stylesheet" type="text/css" href="JSZ4.css">
+</head>
+
+<body>
+<!-- ########################################################## --> 
+
+<!-- Font Size Controls -->
+<button onclick="increaseFontSize()">Larger Font (+)</button>
+<button onclick="decreaseFontSize()">Smaller Font (-)</button>
+<br>
+
+<!-- Controls -->
+
+<br> <textarea id="zkey" rows="1" cols="20">Current Zettel </textarea> Key &nbsp;&nbsp;&nbsp;
+<textarea id="zname" rows="1" cols="44">Keys</textarea> Searchable Field<br>
+<textarea id="zdate" rows="1" cols="12"> Creation Date</textarea> Creation Date &nbsp;&nbsp;&nbsp;
+<textarea id="zcount" rows="1" cols="5">Zettels</textarea> zettel count &nbsp;&nbsp;&nbsp;
+<button onclick="readObj()"> parse & load fields </button>
+<br>
+
+<!-- Zettel Content -->
+
+ 
+
+
+
+<!-- ########################################################## --> 
+<!-- JSON handling -->
+<hr>
+<button onclick="setlocalstorage()"> set browser store </button>
+<button onclick="loadlocalstorage()"> load browser store </button>
+
+ <!-- Button to download a JSON File-->
+<button onclick="download(JSON.stringify(zettel),'zettelkasten.json')">
+  Download to zettelkasten json file</button> <br>
+
+
+<label for="avatar" style="font: 0.8em 'Fira Sans', sans-serif;">Load JSON File:</label>
+<input type="file" id="inputJSON" onchange="pullfiles()" 
+style="background-color:#002b36; color:#b58900" > <br>
+
+
+<button onclick="cleanBackList()">Reload Back Buttons</button>
+<button onclick="parseAllZettels()">Parse All Zettels</button>
+
+
+<!-- Select Zettel -->
+<textarea id="nextz" rows="1" cols="20">top</textarea>
+<button onclick="showNextObj()">go to key</button> 
+
+ <hr>
+
+<!-- access these by docuemt.getElementById("nm").innerHTML = -->
+
+<!-- Searching -->
+<button onclick="searchZettelForRegex()">Search</button>
+<textarea id="searchRegEx" rows="1" cols="20"></textarea>
+<div id='searchresults'>Search Results</div>
+
+<hr>
+
+<div class="wrapper">
+    <div id="reversebuttons"   >Incoming links <br></div>
+    <div id ="col2">
+  <textarea id="zcontent" style="width: 100%; height: calc(100vh - 300px);">Current Zettel content</textarea>
+    </div>
+      <div id ="forwardbuttons">Outgoing links<br></div>
+  </div>
+
+</body> </html>
