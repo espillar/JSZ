@@ -174,6 +174,54 @@ function loadlocalstorage() {
     ZettelkastenApp.data.zettel = JSON.parse(localStorage.getItem('snapshot'))
 }
 
+function resetToZstring() {
+    if (!confirm("Are you sure you want to reset all data to the initial sample set? All current changes will be lost and replaced by the original sample data.")) {
+        return;
+    }
+
+    // 1. Reset the actual data store from the global zstring
+    ZettelkastenApp.data.zettel = JSON.parse(zstring);
+    // ZettelkastenApp.data.currentKey will be set by showObj, but "top" is the target.
+
+    // 2. Pre-fill form fields with "top" zettel's data.
+    // This ensures that when showObj("top") calls readObjNoShow(),
+    // readObjNoShow() reads data for "top" from the form and saves it over ZettelkastenApp.data.zettel["top"].
+    // This is idempotent and prevents stale data from other zettels from being saved.
+    let topZettelData = ZettelkastenApp.data.zettel["top"];
+    if (topZettelData) {
+        document.getElementById("zkey").value = "top";
+        document.getElementById("zname").value = topZettelData.name; // 'name' property from zettel object
+        document.getElementById("zcontent").value = topZettelData.content;
+        document.getElementById("zdate").value = topZettelData.creation;
+    } else {
+        // Fallback if "top" isn't in zstring (should not happen with current zstring)
+        document.getElementById("zkey").value = "top";
+        document.getElementById("zname").value = "Top (Default)";
+        document.getElementById("zcontent").value = "Default top content if zstring 'top' is missing.";
+        document.getElementById("zdate").value = new Date().toISOString().substring(0, 10);
+    }
+    // zcount will be updated by showObj
+    // nextz (previous key display) will be updated by showObj
+
+    // 3. Recalculate backlinks based on the pristine zstring links.
+    // showObj also calls readObjNoShow which calls pokeReverseLinks,
+    // but cleanBackList is more thorough for a full reset.
+    // parseAllZettels could also be relevant if zstring has links in content.
+    // Current zstring has links in 'links' array.
+    parseAllZettels(); // Ensure 'links' arrays are populated from content if zstring was structured that way.
+                       // For current zstring, its 'links' arrays are explicit. This might be redundant or useful depending on zstring's format.
+                       // Given current zstring, this will parse content like [[a]] and put 'a' in links array.
+    cleanBackList();   // Then, build backlinks from those 'links' arrays.
+
+    // 4. Display the "top" zettel.
+    // This will also call readObjNoShow (which now safely re-saves "top" over itself),
+    // update zcount, nextz, and link buttons, and finally call setlocalstorage().
+    ZettelkastenApp.data.currentKey = "top"; // Explicitly set before showObj for clarity, though showObj would do it.
+    showObj("top");
+
+    alert("Zettelkasten has been reset to the default sample data.");
+}
+
 // Create a UUID type 4, not currently used!
 function uuidv4() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>

@@ -62,6 +62,15 @@ The project consists of three main files:
     *   The special 'top' Zettel cannot be deleted.
     *   After deletion, links to the deleted Zettel will be removed from other Zettels, and the backlink information will be updated.
 
+### Resetting to Default Sample Data
+
+Next to the "Parse All Zettels" button, you'll find a "Reset to Default Sample" button.
+
+*   Clicking this button will prompt for confirmation.
+*   If confirmed, it will completely clear your current Zettelkasten data and replace it with the small, original sample set of notes that the application initially loads with (defined in `zstring` within the JavaScript).
+*   This is useful if you want to quickly return to a known clean state or see the original example notes.
+*   **Warning:** This action will discard all current Zettels and any unsaved changes. The previous state will be overwritten in browser local storage as well.
+
 ## Potential Future Development & Known Limitations
 
 *   **Global Variables:** The `jsz4.js` script currently uses global variables (e.g., `current`, `zettel`). Refactoring this to use a more structured approach (e.g., namespacing or classes) would improve code maintainability.
