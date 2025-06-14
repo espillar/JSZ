@@ -492,7 +492,7 @@ var readObjNoShow = function() {
 };
 
 function deleteCurrentZettel() {
-    let keyToDelete = document.getElementById("zkey").value; // Key of the zettel currently in fields
+    let keyToDelete = document.getElementById("zkey").value;
 
     if (keyToDelete === "top") {
         alert("The 'top' Zettel cannot be deleted.");
@@ -504,31 +504,42 @@ function deleteCurrentZettel() {
         return;
     }
 
-    // Confirmation dialog
     if (confirm("Are you sure you want to delete the Zettel '" + JSZ.data.zettel[keyToDelete].name + "' (Key: " + keyToDelete + ")?\nThis action cannot be undone.")) {
-        // Delete the Zettel
+        // 1. Perform actual deletion and data cleanup
         delete JSZ.data.zettel[keyToDelete];
 
-        // Update links and backlinks: Iterate through all zettels
         let allKeys = Object.keys(JSZ.data.zettel);
         for (const key of allKeys) {
             if (JSZ.data.zettel[key] && JSZ.data.zettel[key].links) {
                 JSZ.data.zettel[key].links = JSZ.data.zettel[key].links.filter(link => link !== keyToDelete);
             }
-            // Backlinks will be rebuilt by cleanBackList
         }
+        cleanBackList();
+        JSZ.storageManager.saveToLocalStorage(); // Save the state *after* deletion and cleanup
 
-        cleanBackList(); // Rebuild all backlinks
+        // 2. Prepare UI for loading "top" by pre-filling form fields
+        let topZettelData = JSZ.data.zettel["top"]; // "top" should always exist
+        if (topZettelData) { // Check just in case, though "top" is protected
+            document.getElementById("zkey").value = "top";
+            document.getElementById("zname").value = topZettelData.name;
+            document.getElementById("zcontent").value = topZettelData.content;
+            document.getElementById("zdate").value = topZettelData.creation;
+        } else {
+            // Fallback if "top" somehow got deleted (should be prevented)
+            document.getElementById("zkey").value = "top";
+            document.getElementById("zname").value = "Top (Default)"; // Should match zstring's top name
+            document.getElementById("zcontent").value = "Default top content."; // Should match zstring's top content
+            document.getElementById("zdate").value = new Date().toISOString().substring(0, 10); // Or zstring's top date
+        }
+        // zcount and nextz will be correctly updated by showObj("top")
 
-        JSZ.storageManager.saveToLocalStorage(); // Update local storage
-
-        // Update Zettel count display
-        document.getElementById("zcount").value = Object.keys(JSZ.data.zettel).length;
+        // 3. Now call showObj("top") to refresh the rest of the UI
+        // readObjNoShow() inside showObj will now read "top" from zkey field
+        // and its pre-filled content, effectively re-saving "top" over itself.
+        // The setlocalstorage() at the end of showObj will save this correct state.
+        showObj("top"); // This also updates zcount and calls saveToLocalStorage again.
 
         alert("Zettel '" + keyToDelete + "' deleted.");
-
-        // Load the 'top' Zettel
-        showObj("top");
     }
 }
 
