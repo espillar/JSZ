@@ -75,6 +75,10 @@ The project consists of three main files:
 
 ## Sample Data
 
-A sample Zettelkasten file named `sample_zettelkasten.json` is included in this repository. It contains 100 sample notes with placeholder content and randomly generated interlinks.
+A sample Zettelkasten file named `sample_zettelkasten.json` is included in this repository. It now contains 50 sample notes with placeholder content.
 
-You can load this file into the application using the "Load JSON File" button to explore the features and see an example of a populated Zettelkasten.
+In this sample data:
+*   Links between notes are embedded directly within the `content` field of each Zettel (e.g., `"...some text [[note_23]] more text..."`).
+*   The `links` and `backlinks` arrays within the JSON structure for each Zettel are intentionally empty.
+
+You can load this file into the application using the "Load JSON File" button. After loading, the application should parse the `content` fields to establish the link relationships. If the links or backlinks are not immediately displayed as expected, try using the "Parse All Zettels" button, followed by the "Reload Back Buttons" button, to ensure the connections are fully processed and visualized by the interface.
