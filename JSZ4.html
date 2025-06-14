@@ -8,8 +8,8 @@
 <!-- ########################################################## --> 
 
 <!-- Font Size Controls -->
-<button onclick="increaseFontSize()">Larger Font (+)</button>
-<button onclick="decreaseFontSize()">Smaller Font (-)</button>
+<button onclick="ZettelkastenApp.uiManager.increaseFontSize()">Larger Font (+)</button>
+<button onclick="ZettelkastenApp.uiManager.decreaseFontSize()">Smaller Font (-)</button>
 <br>
 
 <!-- Controls -->
@@ -28,8 +28,8 @@ Date Created &nbsp;&nbsp;&nbsp; <textarea id="zdate" rows="1" cols="12"> Creatio
 <!-- ########################################################## --> 
 <!-- JSON handling -->
 <hr>
-<button onclick="setlocalstorage()"> set browser store </button>
-<button onclick="loadlocalstorage()"> load browser store </button>
+<button onclick="ZettelkastenApp.storageManager.saveToLocalStorage()"> set browser store </button>
+<button onclick="ZettelkastenApp.storageManager.loadFromLocalStorage()"> load browser store </button>
 
  <!-- Button to download a JSON File-->
 <button onclick="download(JSON.stringify(ZettelkastenApp.data.zettel))">

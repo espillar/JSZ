@@ -11,6 +11,31 @@ ZettelkastenApp.data = {
     stash: {},
     rawFileInput: ""
 };
+ZettelkastenApp.dataManager = {};
+ZettelkastenApp.uiManager = {};
+ZettelkastenApp.storageManager = {};
+
+ZettelkastenApp.dataManager.zettelExists = function(key) {
+    return ZettelkastenApp.data.zettel[key] != undefined;
+};
+
+ZettelkastenApp.uiManager.currentBaseFontSizePt = 12;
+
+ZettelkastenApp.uiManager.updatePageFontSize = function(sizeInPt) {
+    document.body.style.fontSize = sizeInPt + 'pt';
+};
+
+ZettelkastenApp.uiManager.increaseFontSize = function() {
+    this.currentBaseFontSizePt += 1;  // Use 'this' to refer to uiManager
+    this.updatePageFontSize(this.currentBaseFontSizePt);
+};
+
+ZettelkastenApp.uiManager.decreaseFontSize = function() {
+    if (this.currentBaseFontSizePt > 6) {
+        this.currentBaseFontSizePt -= 1;
+        this.updatePageFontSize(this.currentBaseFontSizePt);
+    }
+};
 
 // *******************************************************************
 // Initializationg.Globals
@@ -102,7 +127,7 @@ var cr = function() {document.writeln(' <br>')};
 // by tofield, which is so far 
 // forwardbuttons, reversebuttons, searchresults
 function makeJumpButton(str,tofield){
-    if (zettelExistQ(str) != true) makeEmpty(str);
+    if (ZettelkastenApp.dataManager.zettelExists(str) != true) makeEmpty(str);
     let btn = document.createElement("BUTTON");
     btn.innerHTML = str;
     btn.title = ZettelkastenApp.data.zettel[str]['content'];
@@ -164,15 +189,31 @@ function rollback() {
 }
 
 // clear the local storage and place a string of zettel in "snapshot"
-function setlocalstorage() {
-    localStorage.clear();
-    localStorage.setItem('snapshot', JSON.stringify(ZettelkastenApp.data.zettel));
-}
+// function setlocalstorage() { // To be replaced by ZettelkastenApp.storageManager.saveToLocalStorage
+//     localStorage.clear();
+//     localStorage.setItem('snapshot', JSON.stringify(ZettelkastenApp.data.zettel));
+// }
 
 // load "snapshot" from local storage and overwrite zettel with it
-function loadlocalstorage() {
-    ZettelkastenApp.data.zettel = JSON.parse(localStorage.getItem('snapshot'))
-}
+// function loadlocalstorage() { // To be replaced by ZettelkastenApp.storageManager.loadFromLocalStorage
+//     ZettelkastenApp.data.zettel = JSON.parse(localStorage.getItem('snapshot'))
+// }
+
+ZettelkastenApp.storageManager.saveToLocalStorage = function() {
+    localStorage.clear();
+    localStorage.setItem('snapshot', JSON.stringify(ZettelkastenApp.data.zettel));
+};
+
+ZettelkastenApp.storageManager.loadFromLocalStorage = function() {
+    let snapshot = localStorage.getItem('snapshot');
+    if (snapshot) { // Check if snapshot exists
+        ZettelkastenApp.data.zettel = JSON.parse(snapshot);
+        // It's good practice to refresh the view after loading
+        showObj(ZettelkastenApp.data.currentKey || "top"); // Or just show "top"
+    } else {
+        alert("No data found in local storage.");
+    }
+};
 
 function resetToZstring() {
     if (!confirm("Are you sure you want to reset all data to the initial sample set? All current changes will be lost and replaced by the original sample data.")) {
@@ -215,7 +256,7 @@ function resetToZstring() {
 
     // 4. Display the "top" zettel.
     // This will also call readObjNoShow (which now safely re-saves "top" over itself),
-    // update zcount, nextz, and link buttons, and finally call setlocalstorage().
+    // update zcount, nextz, and link buttons, and finally call ZettelkastenApp.storageManager.saveToLocalStorage().
     ZettelkastenApp.data.currentKey = "top"; // Explicitly set before showObj for clarity, though showObj would do it.
     showObj("top");
 
@@ -322,14 +363,14 @@ var showObj = function(key) {
     for (x of ZettelkastenApp.data.zettel[key].backlinks)  {  makeJumpButton(x, "reversebuttons") };
     };
     
-    setlocalstorage();
+    ZettelkastenApp.storageManager.saveToLocalStorage();
  
 };
 
-// Does the zettel exist?
-function zettelExistQ(key) {
-    return ZettelkastenApp.data.zettel[key] != undefined
-};
+// Does the zettel exist? // Replaced by ZettelkastenApp.dataManager.zettelExists
+// function zettelExistQ(key) {
+//     return ZettelkastenApp.data.zettel[key] != undefined
+// };
 
 // This reads the field nextz to navigate to the next object.
 // Not Currently used?
@@ -425,7 +466,7 @@ function deleteCurrentZettel() {
 
         cleanBackList(); // Rebuild all backlinks
 
-        setlocalstorage(); // Update local storage
+        ZettelkastenApp.storageManager.saveToLocalStorage(); // Update local storage
 
         // Update Zettel count display
         document.getElementById("zcount").value = Object.keys(ZettelkastenApp.data.zettel).length;
@@ -558,7 +599,7 @@ function pokeReverseLinks() { // This function should ideally take the sourceKey
     let lks = currentZettelWhoseLinksToProcess.links;
 //    console.log(' links pushed are ' + toString(lks));
     for (const element of lks) {
-        if (zettelExistQ(element) != true) {makeEmpty(element)}; // makeEmpty uses currentKey for backlink, this is fine.
+        if (ZettelkastenApp.dataManager.zettelExists(element) != true) {makeEmpty(element)}; // makeEmpty uses currentKey for backlink, this is fine.
 //        console.log('pushing backlink to ' + element);
         if(ZettelkastenApp.data.zettel[element] && ZettelkastenApp.data.zettel[element].backlinks) {
              if (!ZettelkastenApp.data.zettel[element].backlinks.includes(ZettelkastenApp.data.currentKey)) {
@@ -687,25 +728,25 @@ var pullfiles=function() {
 }
 
 // Font size control functions
-let currentBaseFontSizePt = 12; // Starting base size in points
+// let currentBaseFontSizePt = 12; // Replaced by ZettelkastenApp.uiManager.currentBaseFontSizePt
 
 // This function now only needs to update the body's font size.
 // Other elements should inherit their font size via CSS (e.g., using '1em' or 'inherit').
-function updatePageFontSize(sizeInPt) {
-    document.body.style.fontSize = sizeInPt + 'pt';
-}
+// function updatePageFontSize(sizeInPt) { // Replaced by ZettelkastenApp.uiManager.updatePageFontSize
+//     document.body.style.fontSize = sizeInPt + 'pt';
+// }
 
-function increaseFontSize() {
-    currentBaseFontSizePt += 1;  // Increment by 1pt
-    updatePageFontSize(currentBaseFontSizePt);
-}
+// function increaseFontSize() { // Replaced by ZettelkastenApp.uiManager.increaseFontSize
+//     currentBaseFontSizePt += 1;  // Increment by 1pt
+//     updatePageFontSize(currentBaseFontSizePt);
+// }
 
-function decreaseFontSize() {
-    if (currentBaseFontSizePt > 6) {  // Prevent text from becoming too small (e.g., min 7pt)
-        currentBaseFontSizePt -= 1;  // Decrement by 1pt
-        updatePageFontSize(currentBaseFontSizePt);
-    }
-}
+// function decreaseFontSize() { // Replaced by ZettelkastenApp.uiManager.decreaseFontSize
+//     if (currentBaseFontSizePt > 6) {  // Prevent text from becoming too small (e.g., min 7pt)
+//         currentBaseFontSizePt -= 1;  // Decrement by 1pt
+//         updatePageFontSize(currentBaseFontSizePt);
+//     }
+// }
 
 // Initial call to set font size when script loads, though CSS should handle initial state.
 // updatePageFontSize(currentBaseFontSizePt); // This might be redundant if CSS body { font-size: 12pt; } is set.
