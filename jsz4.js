@@ -4,33 +4,33 @@
 // 2022-09-15 add a setlocalstorage to end of showObj() 
 // so I don't always forget to save where I'm at!
 
-const ZettelkastenApp = {};
-ZettelkastenApp.data = {
+const JSZ = {};
+JSZ.data = {
     zettel: {}, // Will be populated from zstring or loaded data
     currentKey: "top",
     stash: {},
     rawFileInput: ""
 };
-ZettelkastenApp.dataManager = {};
-ZettelkastenApp.uiManager = {};
-ZettelkastenApp.storageManager = {};
+JSZ.dataManager = {};
+JSZ.uiManager = {};
+JSZ.storageManager = {};
 
-ZettelkastenApp.dataManager.zettelExists = function(key) {
-    return ZettelkastenApp.data.zettel[key] != undefined;
+JSZ.dataManager.zettelExists = function(key) {
+    return JSZ.data.zettel[key] != undefined;
 };
 
-ZettelkastenApp.uiManager.currentBaseFontSizePt = 12;
+JSZ.uiManager.currentBaseFontSizePt = 12;
 
-ZettelkastenApp.uiManager.updatePageFontSize = function(sizeInPt) {
+JSZ.uiManager.updatePageFontSize = function(sizeInPt) {
     document.body.style.fontSize = sizeInPt + 'pt';
 };
 
-ZettelkastenApp.uiManager.increaseFontSize = function() {
+JSZ.uiManager.increaseFontSize = function() {
     this.currentBaseFontSizePt += 1;  // Use 'this' to refer to uiManager
     this.updatePageFontSize(this.currentBaseFontSizePt);
 };
 
-ZettelkastenApp.uiManager.decreaseFontSize = function() {
+JSZ.uiManager.decreaseFontSize = function() {
     if (this.currentBaseFontSizePt > 6) {
         this.currentBaseFontSizePt -= 1;
         this.updatePageFontSize(this.currentBaseFontSizePt);
@@ -41,15 +41,15 @@ ZettelkastenApp.uiManager.decreaseFontSize = function() {
 // Initializationg.Globals
 // current is a global (BAD!) that is the key of the current displayed zettel
 
-// var current = "top"; // Replaced by ZettelkastenApp.data.currentKey
+// var current = "top"; // Replaced by JSZ.data.currentKey
 
 
 // stash contains a stashed copy of the current zettel before editing
 // it's stored just after the thing is brought in
 
-// var stash = {}; // Replaced by ZettelkastenApp.data.stash
+// var stash = {}; // Replaced by JSZ.data.stash
 
-// var input = ""; // Replaced by ZettelkastenApp.data.rawFileInput
+// var input = ""; // Replaced by JSZ.data.rawFileInput
 
 
 // See if we can grab a storage manager
@@ -88,7 +88,7 @@ var zstring =
     }` ;
 
 // Populate the namespaced zettel data store
-ZettelkastenApp.data.zettel = JSON.parse(zstring);
+JSZ.data.zettel = JSON.parse(zstring);
 // The old global 'var zettel' is now fully removed.
 
 // *********************************************************************
@@ -103,7 +103,7 @@ document.onkeyup = function(e) {
     };
     if(e.ctrlKey && e.keyCode == 83) {
         // ctrl+s pressed
-        download(JSON.stringify(ZettelkastenApp.data.zettel)); // Filename argument removed
+        download(JSON.stringify(JSZ.data.zettel)); // Filename argument removed
         alert("saving"); // This alert might now be slightly premature if the user cancels the prompt
     };
     if(e.ctrlKey && e.keyCode == 84) {
@@ -127,16 +127,16 @@ var cr = function() {document.writeln(' <br>')};
 // by tofield, which is so far 
 // forwardbuttons, reversebuttons, searchresults
 function makeJumpButton(str,tofield){
-    if (ZettelkastenApp.dataManager.zettelExists(str) != true) makeEmpty(str);
+    if (JSZ.dataManager.zettelExists(str) != true) makeEmpty(str);
     let btn = document.createElement("BUTTON");
     btn.innerHTML = str;
-    btn.title = ZettelkastenApp.data.zettel[str]['content'];
+    btn.title = JSZ.data.zettel[str]['content'];
     btn.onclick = function() {showObj(str)};
     // Removed: btn.style.fontSize = currentFontSize + 'em';  // Font size should be inherited via CSS
     let element = document.getElementById(tofield);
                 //either forwardbuttons or reversebuttons
     element.appendChild(btn);        
-    let brief = ZettelkastenApp.data.zettel[str]["name"];
+    let brief = JSZ.data.zettel[str]["name"];
     let t = document.createTextNode(brief);     // Create a text node
     let span = document.createElement("SPAN");   // Create span to control text size
     // Removed: span.style.fontSize = currentFontSize + 'em';  // Font size should be inherited via CSS
@@ -209,7 +209,7 @@ function clone(obj) {
 function shallowcopytozettel(obj, key) { // key is unused, assumes currentKey
     let keylist = Object.keys(obj);
     for (const k of keylist) {
-	ZettelkastenApp.data.zettel[ZettelkastenApp.data.currentKey][k] = obj[k];
+	JSZ.data.zettel[JSZ.data.currentKey][k] = obj[k];
     }    
 }
     
@@ -217,32 +217,32 @@ function shallowcopytozettel(obj, key) { // key is unused, assumes currentKey
 // I don't think this is currently used
 
 function rollback() {
-    shallowcopytozettel(ZettelkastenApp.data.stash); // Pass the stash object
-    showObj(ZettelkastenApp.data.currentKey); // Pass the current key
+    shallowcopytozettel(JSZ.data.stash); // Pass the stash object
+    showObj(JSZ.data.currentKey); // Pass the current key
 }
 
 // clear the local storage and place a string of zettel in "snapshot"
-// function setlocalstorage() { // To be replaced by ZettelkastenApp.storageManager.saveToLocalStorage
+// function setlocalstorage() { // To be replaced by JSZ.storageManager.saveToLocalStorage
 //     localStorage.clear();
-//     localStorage.setItem('snapshot', JSON.stringify(ZettelkastenApp.data.zettel));
+//     localStorage.setItem('snapshot', JSON.stringify(JSZ.data.zettel));
 // }
 
 // load "snapshot" from local storage and overwrite zettel with it
-// function loadlocalstorage() { // To be replaced by ZettelkastenApp.storageManager.loadFromLocalStorage
-//     ZettelkastenApp.data.zettel = JSON.parse(localStorage.getItem('snapshot'))
+// function loadlocalstorage() { // To be replaced by JSZ.storageManager.loadFromLocalStorage
+//     JSZ.data.zettel = JSON.parse(localStorage.getItem('snapshot'))
 // }
 
-ZettelkastenApp.storageManager.saveToLocalStorage = function() {
+JSZ.storageManager.saveToLocalStorage = function() {
     localStorage.clear();
-    localStorage.setItem('snapshot', JSON.stringify(ZettelkastenApp.data.zettel));
+    localStorage.setItem('snapshot', JSON.stringify(JSZ.data.zettel));
 };
 
-ZettelkastenApp.storageManager.loadFromLocalStorage = function() {
+JSZ.storageManager.loadFromLocalStorage = function() {
     let snapshot = localStorage.getItem('snapshot');
     if (snapshot) { // Check if snapshot exists
-        ZettelkastenApp.data.zettel = JSON.parse(snapshot);
+        JSZ.data.zettel = JSON.parse(snapshot);
         // It's good practice to refresh the view after loading
-        showObj(ZettelkastenApp.data.currentKey || "top"); // Or just show "top"
+        showObj(JSZ.data.currentKey || "top"); // Or just show "top"
     } else {
         alert("No data found in local storage.");
     }
@@ -254,14 +254,14 @@ function resetToZstring() {
     }
 
     // 1. Reset the actual data store from the global zstring
-    ZettelkastenApp.data.zettel = JSON.parse(zstring);
-    // ZettelkastenApp.data.currentKey will be set by showObj, but "top" is the target.
+    JSZ.data.zettel = JSON.parse(zstring);
+    // JSZ.data.currentKey will be set by showObj, but "top" is the target.
 
     // 2. Pre-fill form fields with "top" zettel's data.
     // This ensures that when showObj("top") calls readObjNoShow(),
-    // readObjNoShow() reads data for "top" from the form and saves it over ZettelkastenApp.data.zettel["top"].
+    // readObjNoShow() reads data for "top" from the form and saves it over JSZ.data.zettel["top"].
     // This is idempotent and prevents stale data from other zettels from being saved.
-    let topZettelData = ZettelkastenApp.data.zettel["top"];
+    let topZettelData = JSZ.data.zettel["top"];
     if (topZettelData) {
         document.getElementById("zkey").value = "top";
         document.getElementById("zname").value = topZettelData.name; // 'name' property from zettel object
@@ -289,8 +289,8 @@ function resetToZstring() {
 
     // 4. Display the "top" zettel.
     // This will also call readObjNoShow (which now safely re-saves "top" over itself),
-    // update zcount, nextz, and link buttons, and finally call ZettelkastenApp.storageManager.saveToLocalStorage().
-    ZettelkastenApp.data.currentKey = "top"; // Explicitly set before showObj for clarity, though showObj would do it.
+    // update zcount, nextz, and link buttons, and finally call JSZ.storageManager.saveToLocalStorage().
+    JSZ.data.currentKey = "top"; // Explicitly set before showObj for clarity, though showObj would do it.
     showObj("top");
 
     alert("Zettelkasten has been reset to the default sample data.");
@@ -322,12 +322,12 @@ function uuidv4() {
 
 function makeEmpty(key) {
     let dateString = new Date().toISOString().substring(0, 10);
-    ZettelkastenApp.data.zettel[key] = {
+    JSZ.data.zettel[key] = {
         "name" : key, 
         "content": '\n \n [[' + dateString + ']]', 
         "links": [new Date().toISOString().substring(0, 10)],
         "fileLinks": [], // New property
-        "backlinks": [ZettelkastenApp.data.currentKey],
+        "backlinks": [JSZ.data.currentKey],
         "creation" : dateString};
     
 }
@@ -338,19 +338,19 @@ function makeEmpty(key) {
 // stuffs that link into the backlinks of the zettel pointed to.
 
 function cleanBackList() {
-    let keylist = Object.keys(ZettelkastenApp.data.zettel);
+    let keylist = Object.keys(JSZ.data.zettel);
     for (const k of keylist) {
-//        console.log( ZettelkastenApp.data.zettel[k].backlinks + " " + k)
-        ZettelkastenApp.data.zettel[k].backlinks = [];
-//        console.log( ZettelkastenApp.data.zettel[k].backlinks + " " + k)
+//        console.log( JSZ.data.zettel[k].backlinks + " " + k)
+        JSZ.data.zettel[k].backlinks = [];
+//        console.log( JSZ.data.zettel[k].backlinks + " " + k)
     };
     for (const k of keylist) {
 //        console.log("working on " + k);
-//        console.log("links are ", ZettelkastenApp.data.zettel[k].links);
-        if ( ZettelkastenApp.data.zettel[k].links.length > 0 ) {
-            for (const d of ZettelkastenApp.data.zettel[k].links) {
+//        console.log("links are ", JSZ.data.zettel[k].links);
+        if ( JSZ.data.zettel[k].links.length > 0 ) {
+            for (const d of JSZ.data.zettel[k].links) {
  //               console.log("pushing back link " + d);
-                if (ZettelkastenApp.data.zettel[d] != undefined) ZettelkastenApp.data.zettel[d].backlinks.push(k);
+                if (JSZ.data.zettel[d] != undefined) JSZ.data.zettel[d].backlinks.push(k);
             };
         };
     };
@@ -366,41 +366,41 @@ function cleanBackList() {
 
 var showObj = function(key) {
     // first parse the current edited thing so it's not lost
-    readObjNoShow(); // This function uses ZettelkastenApp.data.currentKey internally for saving the "previous" zettel.
-    //    ZettelkastenApp.data.zettel[key].links = sortuniq(ZettelkastenApp.data.zettel[key].links);
-    ZettelkastenApp.data.zettel[key].backlinks = sortuniq(ZettelkastenApp.data.zettel[key].backlinks);
+    readObjNoShow(); // This function uses JSZ.data.currentKey internally for saving the "previous" zettel.
+    //    JSZ.data.zettel[key].links = sortuniq(JSZ.data.zettel[key].links);
+    JSZ.data.zettel[key].backlinks = sortuniq(JSZ.data.zettel[key].backlinks);
     document.getElementById("zkey").value = key;
-    document.getElementById("zname").value = ZettelkastenApp.data.zettel[key].name;
-    document.getElementById("zcontent").value = ZettelkastenApp.data.zettel[key].content;
-    document.getElementById("nextz").value = ZettelkastenApp.data.currentKey; // Display the key of the zettel *before* this new one
-    document.getElementById("zdate").value = ZettelkastenApp.data.zettel[key].creation;
-    document.getElementById("zcount").value = Object.keys(ZettelkastenApp.data.zettel).length;
- //   document.getElementById("render").value = ZettelkastenApp.data.zettel[key].content;
+    document.getElementById("zname").value = JSZ.data.zettel[key].name;
+    document.getElementById("zcontent").value = JSZ.data.zettel[key].content;
+    document.getElementById("nextz").value = JSZ.data.currentKey; // Display the key of the zettel *before* this new one
+    document.getElementById("zdate").value = JSZ.data.zettel[key].creation;
+    document.getElementById("zcount").value = Object.keys(JSZ.data.zettel).length;
+ //   document.getElementById("render").value = JSZ.data.zettel[key].content;
  //   MathJax.typeset();
-    ZettelkastenApp.data.currentKey = key; // Update currentKey to the new zettel being shown
+    JSZ.data.currentKey = key; // Update currentKey to the new zettel being shown
 
 // Show the forward buttons
     var buttons = document.getElementById("forwardbuttons");
     while(buttons.firstChild){
         buttons.removeChild(buttons.firstChild);
     } 
-    if ( (ZettelkastenApp.data.zettel[key].links).length > 0 ) {
-        for (x of ZettelkastenApp.data.zettel[key].links)
+    if ( (JSZ.data.zettel[key].links).length > 0 ) {
+        for (x of JSZ.data.zettel[key].links)
             {  makeJumpButton(x, "forwardbuttons") };
     };
 
     // Show file/URL links
-    if (ZettelkastenApp.data.zettel[key].fileLinks && ZettelkastenApp.data.zettel[key].fileLinks.length > 0) {
+    if (JSZ.data.zettel[key].fileLinks && JSZ.data.zettel[key].fileLinks.length > 0) {
         // Optional: Add a visual separator if there were Zettel links displayed before this.
         // This check ensures separator only appears if both types of links exist for a Zettel.
-        if (ZettelkastenApp.data.zettel[key].links && ZettelkastenApp.data.zettel[key].links.length > 0 && ZettelkastenApp.data.zettel[key].links[0] !== "nolinksout") { // Ensure not just ["nolinksout"]
+        if (JSZ.data.zettel[key].links && JSZ.data.zettel[key].links.length > 0 && JSZ.data.zettel[key].links[0] !== "nolinksout") { // Ensure not just ["nolinksout"]
             let sep = document.createElement("HR");
             sep.style.marginTop = "5px";
             sep.style.marginBottom = "5px";
             buttons.appendChild(sep); // 'buttons' still refers to document.getElementById("forwardbuttons")
         }
 
-        for (let fileLink of ZettelkastenApp.data.zettel[key].fileLinks) {
+        for (let fileLink of JSZ.data.zettel[key].fileLinks) {
             if (fileLink !== "nolinksout") { // Ensure not to display "nolinksout"
                 makeExternalLinkButton(fileLink, "forwardbuttons");
             }
@@ -412,17 +412,17 @@ var showObj = function(key) {
     while(reverseButtonsDiv.firstChild){
         reverseButtonsDiv.removeChild(reverseButtonsDiv.firstChild);
     } 
-    if ( (ZettelkastenApp.data.zettel[key].backlinks).length > 0 ) {
-    for (x of ZettelkastenApp.data.zettel[key].backlinks)  {  makeJumpButton(x, "reversebuttons") };
+    if ( (JSZ.data.zettel[key].backlinks).length > 0 ) {
+    for (x of JSZ.data.zettel[key].backlinks)  {  makeJumpButton(x, "reversebuttons") };
     };
     
-    ZettelkastenApp.storageManager.saveToLocalStorage();
+    JSZ.storageManager.saveToLocalStorage();
  
 };
 
-// Does the zettel exist? // Replaced by ZettelkastenApp.dataManager.zettelExists
+// Does the zettel exist? // Replaced by JSZ.dataManager.zettelExists
 // function zettelExistQ(key) {
-//     return ZettelkastenApp.data.zettel[key] != undefined
+//     return JSZ.data.zettel[key] != undefined
 // };
 
 // This reads the field nextz to navigate to the next object.
@@ -430,7 +430,7 @@ var showObj = function(key) {
 var showNextObj = function() {
 //    console.log('entering showNextObj');
     var next = document.getElementById("nextz").value;
-    ZettelkastenApp.data.currentKey = next; // This should be the new key to navigate to
+    JSZ.data.currentKey = next; // This should be the new key to navigate to
     showObj(next);
 };
 
@@ -438,7 +438,7 @@ var showNextObj = function() {
 // well, kinda, the keybinding seems broken.
 
 function jumpTop()  {
-    // ZettelkastenApp.data.currentKey = "top"; // showObj will set this
+    // JSZ.data.currentKey = "top"; // showObj will set this
     showObj("top");
 }
 
@@ -466,13 +466,13 @@ var readObjNoShow = function() {
 //    console.log("field being poked is " + zoro);
     var zname = document.getElementById("zname").value;
     var zcontent = document.getElementById("zcontent").value;
-    // var current = zoro; // Local variable 'current', distinct from global 'current' or 'ZettelkastenApp.data.currentKey'
+    // var current = zoro; // Local variable 'current', distinct from global 'current' or 'JSZ.data.currentKey'
                          // This local 'current' is actually the key of the zettel being saved.
     var revlinks = [];
     var creation = document.getElementById("zdate").value;
 //    console.log("poking object " + zoro);
-    if (ZettelkastenApp.data.zettel[zoro] != undefined)
-        { revlinks = ZettelkastenApp.data.zettel[zoro].backlinks }; // Preserve existing backlinks if any
+    if (JSZ.data.zettel[zoro] != undefined)
+        { revlinks = JSZ.data.zettel[zoro].backlinks }; // Preserve existing backlinks if any
     var links = findLinks(zcontent);
     var fileLinks = findFileLinks(zcontent); // Corrected variable name and ensures it's called
  //   var zlinks = document.getElementById("zlinks").value; 
@@ -486,8 +486,8 @@ var readObjNoShow = function() {
             "creation" : creation };
  
 //    console.log('parsing');
-    ZettelkastenApp.data.zettel[zoro] = nz; // Save the new/updated zettel data under its key 'zoro'
-    pokeReverseLinks(); // This function relies on ZettelkastenApp.data.currentKey, which might not be 'zoro'
+    JSZ.data.zettel[zoro] = nz; // Save the new/updated zettel data under its key 'zoro'
+    pokeReverseLinks(); // This function relies on JSZ.data.currentKey, which might not be 'zoro'
                         // pokeReverseLinks should ideally use 'zoro' as the source key.
 };
 
@@ -499,31 +499,31 @@ function deleteCurrentZettel() {
         return;
     }
 
-    if (!ZettelkastenApp.data.zettel[keyToDelete]) {
+    if (!JSZ.data.zettel[keyToDelete]) {
         alert("No Zettel selected or Zettel does not exist.");
         return;
     }
 
     // Confirmation dialog
-    if (confirm("Are you sure you want to delete the Zettel '" + ZettelkastenApp.data.zettel[keyToDelete].name + "' (Key: " + keyToDelete + ")?\nThis action cannot be undone.")) {
+    if (confirm("Are you sure you want to delete the Zettel '" + JSZ.data.zettel[keyToDelete].name + "' (Key: " + keyToDelete + ")?\nThis action cannot be undone.")) {
         // Delete the Zettel
-        delete ZettelkastenApp.data.zettel[keyToDelete];
+        delete JSZ.data.zettel[keyToDelete];
 
         // Update links and backlinks: Iterate through all zettels
-        let allKeys = Object.keys(ZettelkastenApp.data.zettel);
+        let allKeys = Object.keys(JSZ.data.zettel);
         for (const key of allKeys) {
-            if (ZettelkastenApp.data.zettel[key] && ZettelkastenApp.data.zettel[key].links) {
-                ZettelkastenApp.data.zettel[key].links = ZettelkastenApp.data.zettel[key].links.filter(link => link !== keyToDelete);
+            if (JSZ.data.zettel[key] && JSZ.data.zettel[key].links) {
+                JSZ.data.zettel[key].links = JSZ.data.zettel[key].links.filter(link => link !== keyToDelete);
             }
             // Backlinks will be rebuilt by cleanBackList
         }
 
         cleanBackList(); // Rebuild all backlinks
 
-        ZettelkastenApp.storageManager.saveToLocalStorage(); // Update local storage
+        JSZ.storageManager.saveToLocalStorage(); // Update local storage
 
         // Update Zettel count display
-        document.getElementById("zcount").value = Object.keys(ZettelkastenApp.data.zettel).length;
+        document.getElementById("zcount").value = Object.keys(JSZ.data.zettel).length;
 
         alert("Zettel '" + keyToDelete + "' deleted.");
 
@@ -539,8 +539,8 @@ var showstring = function() {
 
 // shownewstring is currently unused
 var shownewstring = function() {
-    //document.getElementById("newzettelstring").innerHTML = JSON.stringify(ZettelkastenApp.data.zettel);
-    document.getElementById("newzettelstring").innerHTML = ZettelkastenApp.data.zettel; // This will show [object Object]
+    //document.getElementById("newzettelstring").innerHTML = JSON.stringify(JSZ.data.zettel);
+    document.getElementById("newzettelstring").innerHTML = JSZ.data.zettel; // This will show [object Object]
 };
 
 // *******************************************************************
@@ -565,13 +565,13 @@ function searchZettelForRegex() {
     }
 
     let re = new RegExp(regValue,'i');
-    let keylist = Object.keys(ZettelkastenApp.data.zettel);
+    let keylist = Object.keys(JSZ.data.zettel);
     let foundCount = 0;
     for (const k of keylist) {
 //        console.log(k);
-//        console.log(ZettelkastenApp.data.zettel[k].name);
-//        console.log(re.exec(ZettelkastenApp.data.zettel[k].name));
-        if (ZettelkastenApp.data.zettel[k].name && re.exec(ZettelkastenApp.data.zettel[k].name) != null) {
+//        console.log(JSZ.data.zettel[k].name);
+//        console.log(re.exec(JSZ.data.zettel[k].name));
+        if (JSZ.data.zettel[k].name && re.exec(JSZ.data.zettel[k].name) != null) {
             makeJumpButton(k,"searchresults");
             foundCount++;
         }
@@ -593,11 +593,11 @@ function searchZettelContent() {
     }
     // Escape special regex characters for a literal search, case-insensitive
     let re = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-    let keylist = Object.keys(ZettelkastenApp.data.zettel);
+    let keylist = Object.keys(JSZ.data.zettel);
 
     let foundCount = 0;
     for (const k of keylist) {
-        if (ZettelkastenApp.data.zettel[k].content && re.test(ZettelkastenApp.data.zettel[k].content)) {
+        if (JSZ.data.zettel[k].content && re.test(JSZ.data.zettel[k].content)) {
             makeJumpButton(k, "searchresults");
             foundCount++;
         }
@@ -641,23 +641,23 @@ function findFileLinks(aText) {
 
 function pokeReverseLinks() { // This function should ideally take the sourceKey as an argument
 //    console.log('enter reverse poke');
-    // Assumes the links for ZettelkastenApp.data.currentKey (the one *just saved* by readObjNoShow)
+    // Assumes the links for JSZ.data.currentKey (the one *just saved* by readObjNoShow)
     // need to be processed to update backlinks of the target zettels.
     // However, readObjNoShow saves to zettel[zoro], where zoro is from zkey field.
-    // If zoro IS ZettelkastenApp.data.currentKey, this is fine.
+    // If zoro IS JSZ.data.currentKey, this is fine.
     // If not (e.g. user changed zkey field and hit parse), this might be using the wrong source.
     // For now, assume currentKey is the one whose links we process.
-    let currentZettelWhoseLinksToProcess = ZettelkastenApp.data.zettel[ZettelkastenApp.data.currentKey];
+    let currentZettelWhoseLinksToProcess = JSZ.data.zettel[JSZ.data.currentKey];
     if (!currentZettelWhoseLinksToProcess || !currentZettelWhoseLinksToProcess.links) return;
 
     let lks = currentZettelWhoseLinksToProcess.links;
 //    console.log(' links pushed are ' + toString(lks));
     for (const element of lks) {
-        if (ZettelkastenApp.dataManager.zettelExists(element) != true) {makeEmpty(element)}; // makeEmpty uses currentKey for backlink, this is fine.
+        if (JSZ.dataManager.zettelExists(element) != true) {makeEmpty(element)}; // makeEmpty uses currentKey for backlink, this is fine.
 //        console.log('pushing backlink to ' + element);
-        if(ZettelkastenApp.data.zettel[element] && ZettelkastenApp.data.zettel[element].backlinks) {
-             if (!ZettelkastenApp.data.zettel[element].backlinks.includes(ZettelkastenApp.data.currentKey)) {
-                ZettelkastenApp.data.zettel[element].backlinks.push(ZettelkastenApp.data.currentKey);
+        if(JSZ.data.zettel[element] && JSZ.data.zettel[element].backlinks) {
+             if (!JSZ.data.zettel[element].backlinks.includes(JSZ.data.currentKey)) {
+                JSZ.data.zettel[element].backlinks.push(JSZ.data.currentKey);
              }
         }
     }
@@ -684,9 +684,9 @@ function pokeReverseLinks() { // This function should ideally take the sourceKey
 // use this to clean things up 
 
 function parseAllZettels(){
-    let keylist = Object.keys(ZettelkastenApp.data.zettel);
+    let keylist = Object.keys(JSZ.data.zettel);
     for (const k of keylist) {
-	let here = ZettelkastenApp.data.zettel[k];
+	let here = JSZ.data.zettel[k];
 //	console.log(here);
 	here.links = findLinks(here.content);
 	here.fileLinks = findFileLinks(here.content); // Added this line
@@ -724,14 +724,14 @@ function download(text){ // Signature changed
 //writejson writes the current json to a text element called json
 // not currently used
 var writejson = function() {
-    var j = JSON.stringify(ZettelkastenApp.data.zettel);
+    var j = JSON.stringify(JSZ.data.zettel);
     document.getElementById("json").value =j;
 };
 
 //exportjson creates a json string of the current zettel
 //not currently used
 var exportjson = function() {
-    window.open("data:text/json;charset=utf-8," + escape(JSON.stringify(ZettelkastenApp.data.zettel)));
+    window.open("data:text/json;charset=utf-8," + escape(JSON.stringify(JSZ.data.zettel)));
 };
 
 // Read in a JSON file
@@ -754,19 +754,19 @@ var pullfiles=function() {
 
 
     reader.onload = function(e) {
-        ZettelkastenApp.data.rawFileInput = e.target.result;
-//	    console.log(ZettelkastenApp.data.rawFileInput);
-//        ZettelkastenApp.data.zettel = JSON.parse(ZettelkastenApp.data.rawFileInput);
+        JSZ.data.rawFileInput = e.target.result;
+//	    console.log(JSZ.data.rawFileInput);
+//        JSZ.data.zettel = JSON.parse(JSZ.data.rawFileInput);
 	//    };
-//	console.log(ZettelkastenApp.data.rawFileInput);
-	var newentries = JSON.parse(ZettelkastenApp.data.rawFileInput);
+//	console.log(JSZ.data.rawFileInput);
+	var newentries = JSON.parse(JSZ.data.rawFileInput);
 //	console.log(newentries);
 	let keylist =  Object.keys(newentries);
 	for (const k of keylist) {
-	    ZettelkastenApp.data.zettel[k] = {}; // Initialize if it's a new key
+	    JSZ.data.zettel[k] = {}; // Initialize if it's a new key
 	    let subkeys = Object.keys(newentries[k]);
 	    for (const  j of subkeys) {
-		ZettelkastenApp.data.zettel[k][j]= newentries[k][j];
+		JSZ.data.zettel[k][j]= newentries[k][j];
 	    };
 	};
     }
@@ -783,20 +783,20 @@ var pullfiles=function() {
 }
 
 // Font size control functions
-// let currentBaseFontSizePt = 12; // Replaced by ZettelkastenApp.uiManager.currentBaseFontSizePt
+// let currentBaseFontSizePt = 12; // Replaced by JSZ.uiManager.currentBaseFontSizePt
 
 // This function now only needs to update the body's font size.
 // Other elements should inherit their font size via CSS (e.g., using '1em' or 'inherit').
-// function updatePageFontSize(sizeInPt) { // Replaced by ZettelkastenApp.uiManager.updatePageFontSize
+// function updatePageFontSize(sizeInPt) { // Replaced by JSZ.uiManager.updatePageFontSize
 //     document.body.style.fontSize = sizeInPt + 'pt';
 // }
 
-// function increaseFontSize() { // Replaced by ZettelkastenApp.uiManager.increaseFontSize
+// function increaseFontSize() { // Replaced by JSZ.uiManager.increaseFontSize
 //     currentBaseFontSizePt += 1;  // Increment by 1pt
 //     updatePageFontSize(currentBaseFontSizePt);
 // }
 
-// function decreaseFontSize() { // Replaced by ZettelkastenApp.uiManager.decreaseFontSize
+// function decreaseFontSize() { // Replaced by JSZ.uiManager.decreaseFontSize
 //     if (currentBaseFontSizePt > 6) {  // Prevent text from becoming too small (e.g., min 7pt)
 //         currentBaseFontSizePt -= 1;  // Decrement by 1pt
 //         updatePageFontSize(currentBaseFontSizePt);
