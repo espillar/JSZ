@@ -130,7 +130,20 @@ function makeJumpButton(str,tofield){
     if (JSZ.dataManager.zettelExists(str) != true) makeEmpty(str);
     let btn = document.createElement("BUTTON");
     btn.innerHTML = str;
-    btn.title = JSZ.data.zettel[str]['content'];
+    // Ensure JSZ.data.zettel[str] exists due to the check: if (JSZ.dataManager.zettelExists(str) != true) makeEmpty(str);
+    let targetZettel = JSZ.data.zettel[str];
+    let zettelContent = targetZettel?.content;
+    let zettelName = targetZettel?.name; // 'name' property now typically stores tags
+
+    if (zettelContent && zettelContent.trim() !== "") {
+        btn.title = zettelContent;
+    } else if (zettelName && zettelName.trim() !== "") {
+        // If content is empty but 'name' (tags) exists, show that.
+        btn.title = "Tags: " + zettelName + " (Content is empty)";
+    } else {
+        // If both content and 'name' (tags) are empty, show the key.
+        btn.title = "Zettel Key: " + str + " (Content and Tags are empty)";
+    }
     btn.onclick = function() {showObj(str)};
     // Removed: btn.style.fontSize = currentFontSize + 'em';  // Font size should be inherited via CSS
     let element = document.getElementById(tofield);
