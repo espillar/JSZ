@@ -8,18 +8,16 @@
 <!-- ########################################################## --> 
 
 <!-- Font Size Controls -->
-<button onclick="increaseFontSize()">Larger Font (+)</button>
-<button onclick="decreaseFontSize()">Smaller Font (-)</button>
+<button onclick="JSZ.uiManager.increaseFontSize()">Larger Font (+)</button>
+<button onclick="JSZ.uiManager.decreaseFontSize()">Smaller Font (-)</button>
 <br>
 
 <!-- Controls -->
 
-<br> <textarea id="zkey" rows="1" cols="20">Current Zettel </textarea> Key &nbsp;&nbsp;&nbsp;
-<textarea id="zname" rows="1" cols="44">Keys</textarea> Searchable Field<br>
-<textarea id="zdate" rows="1" cols="12"> Creation Date</textarea> Creation Date &nbsp;&nbsp;&nbsp;
-<textarea id="zcount" rows="1" cols="5">Zettels</textarea> zettel count &nbsp;&nbsp;&nbsp;
-<button onclick="readObj()"> parse & load fields </button>
-<br>
+<br> Zettel Name &nbsp;&nbsp;&nbsp; <textarea id="zkey" rows="1" cols="40">Current Zettel </textarea><br>
+Tags &nbsp;&nbsp;&nbsp; <textarea id="zname" rows="1" cols="60">Enter tags here</textarea><br>
+Date Created &nbsp;&nbsp;&nbsp; <textarea id="zdate" rows="1" cols="12"> Creation Date</textarea> &nbsp;&nbsp;&nbsp; Zettel Count &nbsp;&nbsp;&nbsp; <textarea id="zcount" rows="1" cols="10">Zettels</textarea> &nbsp;&nbsp;&nbsp; <button onclick="readObj()"> parse & load fields </button><br>
+<button onclick="deleteCurrentZettel()" style="background-color: #c9302c; color: white;">Delete Current Zettel</button><br>
 
 <!-- Zettel Content -->
 
@@ -30,11 +28,11 @@
 <!-- ########################################################## --> 
 <!-- JSON handling -->
 <hr>
-<button onclick="setlocalstorage()"> set browser store </button>
-<button onclick="loadlocalstorage()"> load browser store </button>
+<button onclick="JSZ.storageManager.saveToLocalStorage()"> set browser store </button>
+<button onclick="JSZ.storageManager.loadFromLocalStorage()"> load browser store </button>
 
  <!-- Button to download a JSON File-->
-<button onclick="download(JSON.stringify(zettel),'zettelkasten.json')">
+<button onclick="download(JSON.stringify(JSZ.data.zettel))">
   Download to zettelkasten json file</button> <br>
 
 
@@ -45,19 +43,22 @@ style="background-color:#002b36; color:#b58900" > <br>
 
 <button onclick="cleanBackList()">Reload Back Buttons</button>
 <button onclick="parseAllZettels()">Parse All Zettels</button>
+<button onclick="resetToZstring()">Reset to Default Sample</button>
 
 
 <!-- Select Zettel -->
-<textarea id="nextz" rows="1" cols="20">top</textarea>
-<button onclick="showNextObj()">go to key</button> 
+Go to Zettel Key: <textarea id="nextz" rows="1" cols="20">top</textarea>
+<button onclick="showNextObj()">Go</button>
 
  <hr>
 
 <!-- access these by docuemt.getElementById("nm").innerHTML = -->
 
 <!-- Searching -->
-<button onclick="searchZettelForRegex()">Search</button>
-<textarea id="searchRegEx" rows="1" cols="20"></textarea>
+Search by Name (Regex): <textarea id="searchRegEx" rows="1" cols="40"></textarea>
+<button onclick="searchZettelForRegex()">Search Name</button><br>
+Search Content: <textarea id="searchFullText" rows="1" cols="40" placeholder="Enter text to search content"></textarea>
+<button onclick="searchZettelContent()">Search Content</button>
 <div id='searchresults'>Search Results</div>
 
 <hr>
