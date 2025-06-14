@@ -27,11 +27,11 @@ The project consists of three main files:
 1.  **Open the Application:** To start using JSZ4, simply open the `JSZ4.html` file in a modern web browser.
 2.  **Interface Overview:**
     *   **Font Size Controls:** Buttons at the top (`Larger Font (+)`, `Smaller Font (-)`) allow you to adjust the text size.
-    *   **Zettel Fields:**
-        *   `Zettel Key (ID)`: Displays the key of the currently viewed Zettel. You can also type a key here and click `parse & load fields` to navigate or create. (Formerly "Current Zettel Key")
-        *   `Zettel Name/Title`: The name of the Zettel. This field is used for searching. (Formerly "Keys Searchable Field")
-        *   `Date Created`: Shows the creation date of the Zettel. (Formerly "Creation Date")
-        *   `Zettels zettel count`: Displays the total number of Zettels.
+    *   **Zettel Fields:** The 'Zettel Name' (unique key) and 'Tags' fields are now on separate lines. The 'Date Created' and 'Zettel Count' fields follow on the next line.
+        *   `Zettel Name`: Displays the unique key/ID of the currently viewed Zettel. This is the primary identifier for linking. (Field width increased)
+        *   `Tags`: Enter tags or keywords for the Zettel, separated by spaces or commas (actual parsing/use of tags as distinct entities is not yet implemented; this field is currently searched as a whole string by the 'Search Name' function). (Field moved to a new line, width increased)
+        *   `Date Created`: Shows the creation date of the Zettel.
+        *   `Zettels zettel count`: Displays the total number of Zettels. (Field width increased)
         *   `parse & load fields`: Click this button after editing Zettel fields (like key, name, content) to save the changes to the current Zettel in memory.
     *   **Zettel Content:** The large text area is where you write the main content of your Zettel. Use `[[link_key]]` to create links to other Zettels.
     *   **Saving and Loading:**
@@ -43,19 +43,21 @@ The project consists of three main files:
         *   `Reload Back Buttons`: Refreshes the backlink information for all Zettels.
         *   `Parse All Zettels`: Re-parses all Zettels to update their link lists.
         *   `Go to Zettel Key: [textarea] Go`: Allows you to type a Zettel key into the textarea and click "Go" to navigate to that Zettel.
-    *   **Searching:**
-        *   `Search by Name (Regex): [textarea] Search Name`: Enter your search term (supports regular expressions) into the textarea and click "Search Name" to find Zettels by their name/title. Results appear in the 'Search Results' area below.
-        *   `Search Content: [textarea] Search Content`: Enter text into this textarea and click 'Search Content' to search the textual content of all your Zettels. Results will appear in the 'Search Results' area below.
+    *   **Searching:** The search interface has two main functions, now stacked on separate lines for clarity, with wider input fields:
+        *   **Search by Name (Regex):** `[Textarea for id='searchRegEx', now wider]` `[Button 'Search Name']`. Searches the 'Tags' field of Zettels.
+        *   **Search Content:** `[Textarea for id='searchFullText', now wider]` `[Button 'Search Content']`. Searches the main content of Zettels.
+        Search results appear in the 'Search Results' area below.
     *   **Link Panes:**
         *   `Incoming links`: Displays Zettels that link to the currently viewed Zettel.
         *   `Outgoing links`: Displays Zettels that the current Zettel links to.
 3.  **Creating a New Zettel:**
-    *   Type a new, unique key in the `Zettel Key (ID)` field.
-    *   Fill in the `Zettel Name/Title` and the `Zettel Content`.
+    *   Type a new, unique key in the `Zettel Name` field (this serves as the ID).
+    *   Optionally, add tags in the `Tags` field.
+    *   Fill in the `Zettel Content`.
     *   Click `parse & load fields`. The system will create the new Zettel. If the key for a linked Zettel (e.g. `[[new_key]]`) does not exist, it will be created when the linking Zettel is parsed and saved.
 4.  **Saving Your Work:** Regularly use `Download to zettelkasten.json file` to save your work to a file, as browser local storage can be cleared.
 5.  **Deleting a Zettel:**
-    *   When viewing a Zettel, you can delete it by clicking the 'Delete Current Zettel' button (styled in red, located near the 'parse & load fields' button).
+    *   When viewing a Zettel, you can delete it by clicking the 'Delete Current Zettel' button (styled in red, now on its own line for clarity after the 'parse & load fields' button).
     *   **Warning:** You will be asked for confirmation before the Zettel is permanently deleted. This action cannot be undone.
     *   The special 'top' Zettel cannot be deleted.
     *   After deletion, links to the deleted Zettel will be removed from other Zettels, and the backlink information will be updated.
