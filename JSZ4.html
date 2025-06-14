@@ -14,11 +14,12 @@
 
 <!-- Controls -->
 
-<br> <textarea id="zkey" rows="1" cols="20">Current Zettel </textarea> Key &nbsp;&nbsp;&nbsp;
-<textarea id="zname" rows="1" cols="44">Keys</textarea> Searchable Field<br>
-<textarea id="zdate" rows="1" cols="12"> Creation Date</textarea> Creation Date &nbsp;&nbsp;&nbsp;
+<br> <textarea id="zkey" rows="1" cols="20">Current Zettel </textarea> Zettel Key (ID) &nbsp;&nbsp;&nbsp;
+<textarea id="zname" rows="1" cols="44">Keys</textarea> Zettel Name/Title<br>
+<textarea id="zdate" rows="1" cols="12"> Creation Date</textarea> Date Created &nbsp;&nbsp;&nbsp;
 <textarea id="zcount" rows="1" cols="5">Zettels</textarea> zettel count &nbsp;&nbsp;&nbsp;
 <button onclick="readObj()"> parse & load fields </button>
+<button onclick="deleteCurrentZettel()" style="background-color: #c9302c; color: white;">Delete Current Zettel</button>
 <br>
 
 <!-- Zettel Content -->
@@ -48,16 +49,19 @@ style="background-color:#002b36; color:#b58900" > <br>
 
 
 <!-- Select Zettel -->
-<textarea id="nextz" rows="1" cols="20">top</textarea>
-<button onclick="showNextObj()">go to key</button> 
+Go to Zettel Key: <textarea id="nextz" rows="1" cols="20">top</textarea>
+<button onclick="showNextObj()">Go</button>
 
  <hr>
 
 <!-- access these by docuemt.getElementById("nm").innerHTML = -->
 
 <!-- Searching -->
-<button onclick="searchZettelForRegex()">Search</button>
-<textarea id="searchRegEx" rows="1" cols="20"></textarea>
+Search by Name (Regex): <textarea id="searchRegEx" rows="1" cols="20"></textarea>
+<button onclick="searchZettelForRegex()">Search Name</button>
+&nbsp; <!-- Adding some space -->
+Search Content: <textarea id="searchFullText" rows="1" cols="20" placeholder="Enter text to search content"></textarea>
+<button onclick="searchZettelContent()">Search Content</button>
 <div id='searchresults'>Search Results</div>
 
 <hr>
