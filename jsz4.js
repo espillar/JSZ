@@ -78,8 +78,8 @@ document.onkeyup = function(e) {
     };
     if(e.ctrlKey && e.keyCode == 83) {
         // ctrl+s pressed
-        download(JSON.stringify(ZettelkastenApp.data.zettel),'zettelkasten.json');
-        alert("saving");
+        download(JSON.stringify(ZettelkastenApp.data.zettel)); // Filename argument removed
+        alert("saving"); // This alert might now be slightly premature if the user cancels the prompt
     };
     if(e.ctrlKey && e.keyCode == 84) {
         // ctrl+t pressed
@@ -552,15 +552,29 @@ function parseAllZettels(){
 // *******************************************************************
 // JSON handling// *********************************************************************
 // *********************************************************************
-//download(text, filename) downloads the string in text to a file "filename"
+//download(text) prompts for filename and downloads the string in text
+function download(text){ // Signature changed
+    const date = new Date();
+    // Format: YYYY-MM-DD
+    const defaultFilename = date.getFullYear() + '-' +
+                            String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                            String(date.getDate()).padStart(2, '0') + '.json';
 
-function download(text, filename){
+    let userFilename = prompt("Enter filename for download:", defaultFilename);
+
+    if (!userFilename) { // User cancelled or entered empty string
+        alert("Download cancelled.");
+        return; // Abort download
+    }
+
     var blob = new Blob([text], {type: "text/plain"});
     var url = window.URL.createObjectURL(blob);
     var a = document.createElement("a");
     a.href = url;
-    a.download = filename;
+    a.download = userFilename; // Use the filename from prompt
     a.click();
+    // Optional: revoke the object URL after some time
+    // setTimeout(() => window.URL.revokeObjectURL(url), 100);
   }
 
 //writejson writes the current json to a text element called json
