@@ -1,0 +1,51 @@
+button {
+ background-color: #E0E0E0;
+  border: 1px solid #CCCCCC;
+  color: #333333;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 1em;
+}
+
+textarea {
+  border: 1px solid #CCCCCC;
+  background-color: #FFFFFF;
+  font-size: inherit;
+  font-family: inherit;
+  color: #333333;
+  resize: true;
+}
+
+body {
+  font-size: 12pt;
+  font-family: "Fira Sans", sans-serif;
+  background-color: #F5F5F5;
+  color: #333333;
+}
+
+a { color:  #268bd2;}
+
+div { clear: none;}
+
+h1 {
+  color: #555555;
+  margin-left: 2px;
+  font-size: 1.5em;
+}
+
+.cols div { flex-grow: 1; }
+.cols { display: flex;  }
+
+.wrapper {
+    display: grid;
+    grid-template-columns: 200px 1fr 200px;
+}
+
+label {
+    font-size: 1em;
+}
+
+.custom-tooltip::before {
+    font-size: 1em;
+}

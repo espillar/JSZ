@@ -592,10 +592,8 @@ function searchZettelForRegex() {
     let keylist = Object.keys(JSZ.data.zettel);
     let foundCount = 0;
     for (const k of keylist) {
-//        console.log(k);
-//        console.log(JSZ.data.zettel[k].name);
-//        console.log(re.exec(JSZ.data.zettel[k].name));
-        if (JSZ.data.zettel[k].name && re.exec(JSZ.data.zettel[k].name) != null) {
+        const zettel = JSZ.data.zettel[k];
+        if ((zettel.name && re.test(zettel.name)) || re.test(k)) {
             makeJumpButton(k,"searchresults");
             foundCount++;
         }
@@ -829,6 +827,29 @@ var pullfiles=function() {
 
 // Initial call to set font size when script loads, though CSS should handle initial state.
 // updatePageFontSize(currentBaseFontSizePt); // This might be redundant if CSS body { font-size: 12pt; } is set.
+
+JSZ.uiManager.setSolarizedTheme = function() {
+    document.getElementById('theme-stylesheet').href = 'JSZ4_solarized.css';
+};
+
+JSZ.uiManager.setGrayTheme = function() {
+    document.getElementById('theme-stylesheet').href = 'JSZ4_gray.css';
+};
+
+function setSolarizedTheme() {
+    JSZ.uiManager.setSolarizedTheme();
+}
+
+function setGrayTheme() {
+    JSZ.uiManager.setGrayTheme();
+}
+
+function updateLeftColumnWidth(value) {
+    const wrapper = document.querySelector('.wrapper');
+    if (wrapper) {
+        wrapper.style.gridTemplateColumns = `${value}px 1fr 200px`;
+    }
+}
 
 // The MutationObserver for new textareas is likely no longer needed if they correctly inherit font size.
 // If specific elements added dynamically still need explicit font sizing, that would be a separate consideration.

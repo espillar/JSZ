@@ -1,7 +1,7 @@
 <html>
 <head>
   <script src="jsz4.js"> </script>  
-  <link rel="stylesheet" type="text/css" href="JSZ4.css">
+  <link id="theme-stylesheet" rel="stylesheet" type="text/css" href="JSZ4_gray.css">
 </head>
 
 <body>
@@ -10,14 +10,17 @@
 <!-- Font Size Controls -->
 <button onclick="JSZ.uiManager.increaseFontSize()">Larger Font (+)</button>
 <button onclick="JSZ.uiManager.decreaseFontSize()">Smaller Font (-)</button>
+<button onclick="setSolarizedTheme()">Solarized</button>
+<button onclick="setGrayTheme()">Gray</button>
+<br>
+<label for="left-width-slider">Left Column Width:</label>
+<input type="range" id="left-width-slider" min="100" max="500" value="200" oninput="updateLeftColumnWidth(this.value)">
 <br>
 
 <!-- Controls -->
 
-<br> Zettel Name &nbsp;&nbsp;&nbsp; <textarea id="zkey" rows="1" cols="40">Current Zettel </textarea><br>
-Tags &nbsp;&nbsp;&nbsp; <textarea id="zname" rows="1" cols="60">Enter tags here</textarea><br>
-Date Created &nbsp;&nbsp;&nbsp; <textarea id="zdate" rows="1" cols="12"> Creation Date</textarea> &nbsp;&nbsp;&nbsp; Zettel Count &nbsp;&nbsp;&nbsp; <textarea id="zcount" rows="1" cols="10">Zettels</textarea> &nbsp;&nbsp;&nbsp; <button onclick="readObj()"> parse & load fields </button><br>
-<button onclick="deleteCurrentZettel()" style="background-color: #c9302c; color: white;">Delete Current Zettel</button><br>
+Zettel Name &nbsp;&nbsp;&nbsp; <textarea id="zkey" rows="1" cols="40">Current Zettel </textarea>&nbsp;&nbsp;&nbsp; Tags &nbsp;&nbsp;&nbsp; <textarea id="zname" rows="1" cols="60">Enter tags here</textarea><br>
+Date Created &nbsp;&nbsp;&nbsp; <textarea id="zdate" rows="1" cols="12"> Creation Date</textarea> &nbsp;&nbsp;&nbsp; Zettel Count &nbsp;&nbsp;&nbsp; <textarea id="zcount" rows="1" cols="10">Zettels</textarea>&nbsp;&nbsp;&nbsp; <button onclick="deleteCurrentZettel()" style="background-color: #c9302c; color: white;">Delete Current Zettel</button><br>
 
 <!-- Zettel Content -->
 
@@ -60,13 +63,13 @@ Search by Name (Regex): <textarea id="searchRegEx" rows="1" cols="40"></textarea
 Search Content: <textarea id="searchFullText" rows="1" cols="40" placeholder="Enter text to search content"></textarea>
 <button onclick="searchZettelContent()">Search Content</button>
 <div id='searchresults'>Search Results</div>
+<button onclick="readObj()"> parse & load fields </button><br>
 
 <hr>
-
 <div class="wrapper">
     <div id="reversebuttons"   >Incoming links <br></div>
     <div id ="col2">
-  <textarea id="zcontent" style="width: 100%; height: calc(100vh - 300px);">Current Zettel content</textarea>
+  <textarea id="zcontent" style="width: 100%; height: calc(100vh - 400px);">Current Zettel content</textarea>
     </div>
       <div id ="forwardbuttons">Outgoing links<br></div>
   </div>
