@@ -847,7 +847,7 @@ function setGrayTheme() {
 function updateLeftColumnWidth(value) {
     const wrapper = document.querySelector('.wrapper');
     if (wrapper) {
-        wrapper.style.gridTemplateColumns = `${value}px 1fr 200px`;
+        wrapper.style.gridTemplateColumns = `${value}px 1fr 1fr`;
     }
 }
 
