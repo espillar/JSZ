@@ -845,19 +845,21 @@ var pullfiles=function() {
 // updatePageFontSize(currentBaseFontSizePt); // This might be redundant if CSS body { font-size: 12pt; } is set.
 
 JSZ.uiManager.setSolarizedTheme = function() {
-    document.getElementById('theme-stylesheet').href = 'JSZ4_solarized.css';
+    document.getElementById('theme-stylesheet').href = 'JSZ4_solarized_v2.css';
 };
 
 JSZ.uiManager.setGrayTheme = function() {
-    document.getElementById('theme-stylesheet').href = 'JSZ4_gray.css';
+    document.getElementById('theme-stylesheet').href = 'JSZ4_gray_v2.css';
 };
 
 function setSolarizedTheme() {
     JSZ.uiManager.setSolarizedTheme();
+    closeSettings();
 }
 
 function setGrayTheme() {
     JSZ.uiManager.setGrayTheme();
+    closeSettings();
 }
 
 

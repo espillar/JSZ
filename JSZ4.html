@@ -1,7 +1,7 @@
 <html>
 <head>
   <script src="jsz4.js"> </script>  
-  <link id="theme-stylesheet" rel="stylesheet" type="text/css" href="JSZ4_gray.css">
+  <link id="theme-stylesheet" rel="stylesheet" type="text/css" href="JSZ4_gray_v2.css">
 </head>
 
 <body>
@@ -14,8 +14,8 @@
     <h3>Appearance</h3>
     <button onclick="JSZ.uiManager.increaseFontSize()">Larger Font (+)</button>
     <button onclick="JSZ.uiManager.decreaseFontSize()">Smaller Font (-)</button>
-    <button onclick="setSolarizedTheme()">Solarized Theme</button>
-    <button onclick="setGrayTheme()">Gray Theme</button>
+    <button onclick="document.getElementById('theme-stylesheet').href = 'JSZ4_solarized_v2.css'; closeSettings();">Solarized Theme</button>
+    <button onclick="document.getElementById('theme-stylesheet').href = 'JSZ4_gray_v2.css'; closeSettings();">Gray Theme</button>
     <br><br>
 
     <h3>Data Management</h3>
