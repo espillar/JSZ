@@ -308,3 +308,20 @@ body.search-open .status-bar {
   left: 300px;
   width: calc(100% - 300px);
 }
+
+/* Custom Tooltip */
+#global-tooltip {
+    display: none;
+    position: absolute;
+    z-index: 9999;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    color: #333;
+    padding: 10px;
+    border-radius: 4px;
+    max-width: 300px;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+    font-size: 1.2em;
+    white-space: pre-wrap;
+    pointer-events: none;
+}

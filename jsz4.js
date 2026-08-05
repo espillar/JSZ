@@ -136,14 +136,17 @@ function makeJumpButton(str,tofield){
     let zettelName = targetZettel?.name; // 'name' property now typically stores tags
 
     if (zettelContent && zettelContent.trim() !== "") {
-        btn.title = zettelContent;
+        btn.dataset.tooltip = zettelContent;
     } else if (zettelName && zettelName.trim() !== "") {
         // If content is empty but 'name' (tags) exists, show that.
-        btn.title = "Tags: " + zettelName + " (Content is empty)";
+        btn.dataset.tooltip = "Tags: " + zettelName + " (Content is empty)";
     } else {
         // If both content and 'name' (tags) are empty, show the key.
-        btn.title = "Zettel Key: " + str + " (Content and Tags are empty)";
+        btn.dataset.tooltip = "Zettel Key: " + str + " (Content and Tags are empty)";
     }
+    
+    btn.onmousemove = function(e) { showTooltip(e, this.dataset.tooltip); };
+    btn.onmouseout = hideTooltip;
     btn.onclick = function() {showObj(str)};
     // Removed: btn.style.fontSize = currentFontSize + 'em';  // Font size should be inherited via CSS
     let element = document.getElementById(tofield);
@@ -958,7 +961,26 @@ function renderMarkdown(text) {
     
     // 2.5 Convert Links
     var withLinks = withHeaders.replace(/\[\[(.*?)\]\]/g, function(match, key) {
-        return '<a href="javascript:void(0)" onclick="showObj(\'' + key + '\')" style="font-weight: bold; text-decoration: underline; cursor: pointer;">[[ ' + key + ' ]]</a>';
+        var tooltipText = "Zettel Key: " + key; // fallback
+        if (JSZ.dataManager.zettelExists(key)) {
+            var targetZettel = JSZ.data.zettel[key];
+            var zettelContent = targetZettel ? targetZettel.content : "";
+            var zettelName = targetZettel ? targetZettel.name : "";
+            if (zettelContent && zettelContent.trim() !== "") {
+                tooltipText = zettelContent;
+            } else if (zettelName && zettelName.trim() !== "") {
+                tooltipText = "Tags: " + zettelName + " (Content is empty)";
+            } else {
+                tooltipText = "Zettel Key: " + key + " (Content and Tags are empty)";
+            }
+        } else {
+            tooltipText = "Zettel does not exist yet (click to create)";
+        }
+        
+        // Escape quotes for HTML attribute
+        var safeTooltip = tooltipText.replace(/"/g, '&quot;');
+        
+        return '<a href="javascript:void(0)" data-tooltip="' + safeTooltip + '" onmousemove="showTooltip(event, this.dataset.tooltip)" onmouseout="hideTooltip()" onclick="if (!JSZ.dataManager.zettelExists(\'' + key + '\')) { makeEmpty(\'' + key + '\'); } hideTooltip(); showObj(\'' + key + '\')" style="font-weight: bold; text-decoration: underline; cursor: pointer;">[[ ' + key + ' ]]</a>';
     });
     
     withLinks = withLinks.replace(/&lt;&lt;(.*?)&gt;&gt;/g, function(match, url) {
@@ -981,4 +1003,38 @@ function renderMarkdown(text) {
     }).join('\n');
     
     return html;
+}
+
+// ============================================================================
+// Global Custom Tooltip Logic
+// ============================================================================
+
+var globalTooltip = document.createElement("div");
+globalTooltip.id = "global-tooltip";
+document.addEventListener("DOMContentLoaded", function() {
+    document.body.appendChild(globalTooltip);
+});
+
+function showTooltip(e, text) {
+    if (!text) return;
+    globalTooltip.innerText = text;
+    globalTooltip.style.display = "block";
+    
+    var x = e.pageX + 15;
+    var y = e.pageY + 15;
+    
+    if (x + globalTooltip.offsetWidth > window.innerWidth) {
+        x = window.innerWidth - globalTooltip.offsetWidth - 10;
+    }
+    
+    if (y + globalTooltip.offsetHeight > window.innerHeight) {
+        y = e.pageY - globalTooltip.offsetHeight - 15;
+    }
+    
+    globalTooltip.style.left = x + "px";
+    globalTooltip.style.top = y + "px";
+}
+
+function hideTooltip() {
+    globalTooltip.style.display = "none";
 }
