@@ -851,6 +851,15 @@ function updateLeftColumnWidth(value) {
     }
 }
 
+// Modal Functions
+function openSettings() {
+    document.getElementById('settings-modal').style.display = 'block';
+}
+
+function closeSettings() {
+    document.getElementById('settings-modal').style.display = 'none';
+}
+
 // The MutationObserver for new textareas is likely no longer needed if they correctly inherit font size.
 // If specific elements added dynamically still need explicit font sizing, that would be a separate consideration.
 // For now, assuming CSS inheritance works for dynamically added elements within styled containers.

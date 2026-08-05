@@ -5,73 +5,95 @@
 </head>
 
 <body>
-<!-- ########################################################## --> 
+<!-- Settings Modal -->
+<div id="settings-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-button" onclick="closeSettings()">&times;</span>
+    <h2>Settings & Data</h2>
+    
+    <h3>Appearance</h3>
+    <button onclick="JSZ.uiManager.increaseFontSize()">Larger Font (+)</button>
+    <button onclick="JSZ.uiManager.decreaseFontSize()">Smaller Font (-)</button>
+    <button onclick="setSolarizedTheme()">Solarized Theme</button>
+    <button onclick="setGrayTheme()">Gray Theme</button>
+    <br><br>
+    <label for="left-width-slider">Left Column Width:</label>
+    <input type="range" id="left-width-slider" min="100" max="500" value="200" oninput="updateLeftColumnWidth(this.value)">
 
-<!-- Font Size Controls -->
-<button onclick="JSZ.uiManager.increaseFontSize()">Larger Font (+)</button>
-<button onclick="JSZ.uiManager.decreaseFontSize()">Smaller Font (-)</button>
-<button onclick="setSolarizedTheme()">Solarized</button>
-<button onclick="setGrayTheme()">Gray</button>
-<br>
-<label for="left-width-slider">Left Column Width:</label>
-<input type="range" id="left-width-slider" min="100" max="500" value="200" oninput="updateLeftColumnWidth(this.value)">
-<br>
-
-<!-- Controls -->
-
-Zettel Name &nbsp;&nbsp;&nbsp; <textarea id="zkey" rows="1" cols="40">Current Zettel </textarea>&nbsp;&nbsp;&nbsp; Tags &nbsp;&nbsp;&nbsp; <textarea id="zname" rows="1" cols="60">Enter tags here</textarea><br>
-Date Created &nbsp;&nbsp;&nbsp; <textarea id="zdate" rows="1" cols="12"> Creation Date</textarea> &nbsp;&nbsp;&nbsp; Zettel Count &nbsp;&nbsp;&nbsp; <textarea id="zcount" rows="1" cols="10">Zettels</textarea>&nbsp;&nbsp;&nbsp; <button onclick="deleteCurrentZettel()" style="background-color: #c9302c; color: white;">Delete Current Zettel</button><br>
-
-<!-- Zettel Content -->
-
- 
-
-
-
-<!-- ########################################################## --> 
-<!-- JSON handling -->
-<hr>
-<button onclick="JSZ.storageManager.saveToLocalStorage()"> set browser store </button>
-<button onclick="JSZ.storageManager.loadFromLocalStorage()"> load browser store </button>
-
- <!-- Button to download a JSON File-->
-<button onclick="download(JSON.stringify(JSZ.data.zettel))">
-  Download to zettelkasten json file</button> <br>
-
-
-<label for="avatar" style="font: 0.8em 'Fira Sans', sans-serif;">Load JSON File:</label>
-<input type="file" id="inputJSON" onchange="pullfiles()" 
-style="background-color:#002b36; color:#b58900" > <br>
-
-
-<button onclick="cleanBackList()">Reload Back Buttons</button>
-<button onclick="parseAllZettels()">Parse All Zettels</button>
-<button onclick="resetToZstring()">Reset to Default Sample</button>
-
-
-<!-- Select Zettel -->
-Go to Zettel Key: <textarea id="nextz" rows="1" cols="20">top</textarea>
-<button onclick="showNextObj()">Go</button>
-
- <hr>
-
-<!-- access these by docuemt.getElementById("nm").innerHTML = -->
-
-<!-- Searching -->
-Search by Name (Regex): <textarea id="searchRegEx" rows="1" cols="40"></textarea>
-<button onclick="searchZettelForRegex()">Search Name</button><br>
-Search Content: <textarea id="searchFullText" rows="1" cols="40" placeholder="Enter text to search content"></textarea>
-<button onclick="searchZettelContent()">Search Content</button>
-<div id='searchresults'>Search Results</div>
-<button onclick="readObj()"> parse & load fields </button><br>
-
-<hr>
-<div class="wrapper">
-    <div id="reversebuttons"   >Incoming links <br></div>
-    <div id ="col2">
-  <textarea id="zcontent" style="width: 100%; height: calc(100vh - 400px);">Current Zettel content</textarea>
-    </div>
-      <div id ="forwardbuttons">Outgoing links<br></div>
+    <h3>Data Management</h3>
+    <button onclick="JSZ.storageManager.saveToLocalStorage()"> Save to Browser </button>
+    <button onclick="JSZ.storageManager.loadFromLocalStorage()"> Load from Browser </button>
+    <button onclick="download(JSON.stringify(JSZ.data.zettel))">Download JSON</button> 
+    <br><br>
+    <label for="inputJSON" style="font: 0.8em 'Fira Sans', sans-serif;">Load JSON File:</label>
+    <input type="file" id="inputJSON" onchange="pullfiles()">
+    <br><br>
+    <button onclick="cleanBackList()">Reload Back Buttons</button>
+    <button onclick="parseAllZettels()">Parse All Zettels</button>
+    <button onclick="resetToZstring()">Reset to Default Sample</button>
   </div>
+</div>
+
+<!-- Header -->
+<div class="header-bar">
+  <h1>JSZ4</h1>
+  <div class="header-actions">
+    <button onclick="openSettings()">Settings</button>
+    <button onclick="deleteCurrentZettel()" class="delete-btn">Delete</button>
+  </div>
+</div>
+
+<!-- Zettel Metadata -->
+<div class="metadata-row">
+  <div class="input-group">
+    <label>Key</label>
+    <input type="text" id="zkey" value="Current Zettel">
+  </div>
+  <div class="input-group tags-group">
+    <label>Tags</label>
+    <input type="text" id="zname" value="Enter tags here">
+  </div>
+</div>
+
+<div class="action-row">
+  <div class="search-group">
+    <input type="text" id="nextz" value="top">
+    <button onclick="showNextObj()">Go to Key</button>
+  </div>
+  <div class="search-group">
+    <input type="text" id="searchRegEx" placeholder="Search Tags (Regex)">
+    <button onclick="searchZettelForRegex()">Search Tags</button>
+  </div>
+  <div class="search-group">
+    <input type="text" id="searchFullText" placeholder="Search Content">
+    <button onclick="searchZettelContent()">Search Content</button>
+  </div>
+  <button onclick="readObj()" class="save-btn">Parse & Save</button>
+</div>
+
+<div id='searchresults'>Search Results</div>
+
+<div class="wrapper">
+  <div id="reversebuttons">Incoming links <br></div>
+  <div id="col2">
+    <textarea id="zcontent" style="width: 100%; height: calc(100vh - 300px);">Current Zettel content</textarea>
+  </div>
+  <div id="forwardbuttons">Outgoing links<br></div>
+</div>
+
+<div class="status-bar">
+  <span>Date Created: <input type="text" id="zdate" class="status-input" value="Creation Date" readonly></span>
+  <span>Total Zettels: <input type="text" id="zcount" class="status-input" value="Zettels" readonly></span>
+</div>
+
+<!-- Close modal script -->
+<script>
+window.onclick = function(event) {
+  var modal = document.getElementById('settings-modal');
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+</script>
 
 </body> </html>
