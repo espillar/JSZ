@@ -924,6 +924,11 @@ function togglePreviewMode() {
     
     if (JSZ.uiManager.isPreviewMode) {
         previewBtn.innerText = "Edit";
+        
+        // Sync dimensions from editor to preview
+        preview.style.width = window.getComputedStyle(editor).width;
+        preview.style.height = window.getComputedStyle(editor).height;
+        
         editor.style.display = "none";
         preview.style.display = "block";
         
@@ -931,6 +936,11 @@ function togglePreviewMode() {
         preview.innerHTML = renderMarkdown(editor.value);
     } else {
         previewBtn.innerText = "Preview";
+        
+        // Sync dimensions from preview back to editor
+        editor.style.width = window.getComputedStyle(preview).width;
+        editor.style.height = window.getComputedStyle(preview).height;
+        
         preview.style.display = "none";
         editor.style.display = "block";
     }
