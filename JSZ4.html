@@ -17,8 +17,6 @@
     <button onclick="setSolarizedTheme()">Solarized Theme</button>
     <button onclick="setGrayTheme()">Gray Theme</button>
     <br><br>
-    <label for="left-width-slider">Left Column Width:</label>
-    <input type="range" id="left-width-slider" min="100" max="500" value="200" oninput="updateLeftColumnWidth(this.value)">
 
     <h3>Data Management</h3>
     <button onclick="JSZ.storageManager.saveToLocalStorage()"> Save to Browser </button>
@@ -38,6 +36,8 @@
 <div class="header-bar">
   <h1>JSZ4</h1>
   <div class="header-actions">
+    <button onclick="openSearchSidebar()">Search</button>
+    <button onclick="readObj()" class="save-btn">Parse & Save</button>
     <button onclick="openSettings()">Settings</button>
     <button onclick="deleteCurrentZettel()" class="delete-btn">Delete</button>
   </div>
@@ -55,30 +55,48 @@
   </div>
 </div>
 
-<div class="action-row">
-  <div class="search-group">
-    <input type="text" id="nextz" value="top">
-    <button onclick="showNextObj()">Go to Key</button>
+<!-- Search Sidebar -->
+<div id="search-sidebar" class="sidebar search-sidebar">
+  <span class="close-button" onclick="closeSearchSidebar()">&times;</span>
+  <h2>Navigation</h2>
+  
+  <div class="sidebar-action-col">
+    <div class="search-group vertical">
+      <label>Go to Zettel:</label>
+      <input type="text" id="nextz" value="top">
+      <button onclick="showNextObj()">Go</button>
+    </div>
+    <hr style="width: 100%; border-color: #555;">
+    <div class="search-group vertical">
+      <label>Search Tags:</label>
+      <input type="text" id="searchRegEx" placeholder="Regex allowed">
+      <button onclick="searchZettelForRegex()">Search</button>
+    </div>
+    <div class="search-group vertical">
+      <label>Search Content:</label>
+      <input type="text" id="searchFullText" placeholder="Literal search">
+      <button onclick="searchZettelContent()">Search</button>
+    </div>
+    <hr style="width: 100%; border-color: #555;">
+    <div id='searchresults'>Search Results</div>
   </div>
-  <div class="search-group">
-    <input type="text" id="searchRegEx" placeholder="Search Tags (Regex)">
-    <button onclick="searchZettelForRegex()">Search Tags</button>
-  </div>
-  <div class="search-group">
-    <input type="text" id="searchFullText" placeholder="Search Content">
-    <button onclick="searchZettelContent()">Search Content</button>
-  </div>
-  <button onclick="readObj()" class="save-btn">Parse & Save</button>
 </div>
 
-<div id='searchresults'>Search Results</div>
-
 <div class="wrapper">
-  <div id="reversebuttons">Incoming links <br></div>
-  <div id="col2">
-    <textarea id="zcontent" style="width: 100%; height: calc(100vh - 300px);">Current Zettel content</textarea>
+  <div id="col2" class="editor-col">
+    <textarea id="zcontent">Current Zettel content</textarea>
   </div>
-  <div id="forwardbuttons">Outgoing links<br></div>
+  <div class="links-col">
+    <div class="link-section">
+      <h3>Outgoing Links</h3>
+      <div id="forwardbuttons"></div>
+    </div>
+    <hr class="link-divider">
+    <div class="link-section">
+      <h3>Incoming Links</h3>
+      <div id="reversebuttons"></div>
+    </div>
+  </div>
 </div>
 
 <div class="status-bar">

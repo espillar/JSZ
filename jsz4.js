@@ -777,20 +777,36 @@ var pullfiles=function() {
 
     reader.onload = function(e) {
         JSZ.data.rawFileInput = e.target.result;
-//	    console.log(JSZ.data.rawFileInput);
-//        JSZ.data.zettel = JSON.parse(JSZ.data.rawFileInput);
-	//    };
-//	console.log(JSZ.data.rawFileInput);
-	var newentries = JSON.parse(JSZ.data.rawFileInput);
-//	console.log(newentries);
-	let keylist =  Object.keys(newentries);
-	for (const k of keylist) {
-	    JSZ.data.zettel[k] = {}; // Initialize if it's a new key
-	    let subkeys = Object.keys(newentries[k]);
-	    for (const  j of subkeys) {
-		JSZ.data.zettel[k][j]= newentries[k][j];
-	    };
-	};
+        var newentries = JSON.parse(JSZ.data.rawFileInput);
+        let keylist =  Object.keys(newentries);
+        
+        // Save current editor state before overwriting data
+        readObjNoShow();
+
+        for (const k of keylist) {
+            JSZ.data.zettel[k] = {}; 
+            let subkeys = Object.keys(newentries[k]);
+            for (const j of subkeys) {
+                JSZ.data.zettel[k][j]= newentries[k][j];
+            };
+        };
+        
+        // Load a zettel from the new dataset to show the user it worked
+        if (keylist.length > 0) {
+            let startKey = keylist.includes("top") ? "top" : keylist[0];
+            let targetData = JSZ.data.zettel[startKey];
+            
+            // Pre-fill fields so showObj's internal save doesn't overwrite with old data
+            document.getElementById("zkey").value = startKey;
+            document.getElementById("zname").value = targetData.name || "";
+            document.getElementById("zcontent").value = targetData.content || "";
+            document.getElementById("zdate").value = targetData.creation || "";
+            
+            showObj(startKey);
+            
+            // Auto-close settings modal since load was initiated from there
+            closeSettings();
+        }
     }
 
 // iterate over files and readAsText
@@ -844,12 +860,7 @@ function setGrayTheme() {
     JSZ.uiManager.setGrayTheme();
 }
 
-function updateLeftColumnWidth(value) {
-    const wrapper = document.querySelector('.wrapper');
-    if (wrapper) {
-        wrapper.style.gridTemplateColumns = `${value}px 1fr 1fr`;
-    }
-}
+
 
 // Modal Functions
 function openSettings() {
@@ -858,6 +869,16 @@ function openSettings() {
 
 function closeSettings() {
     document.getElementById('settings-modal').style.display = 'none';
+}
+
+function openSearchSidebar() {
+    document.getElementById('search-sidebar').classList.add('open');
+    document.body.classList.add('search-open');
+}
+
+function closeSearchSidebar() {
+    document.getElementById('search-sidebar').classList.remove('open');
+    document.body.classList.remove('search-open');
 }
 
 // The MutationObserver for new textareas is likely no longer needed if they correctly inherit font size.
