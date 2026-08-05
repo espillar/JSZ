@@ -385,6 +385,11 @@ var showObj = function(key) {
     document.getElementById("zkey").value = key;
     document.getElementById("zname").value = JSZ.data.zettel[key].name;
     document.getElementById("zcontent").value = JSZ.data.zettel[key].content;
+    
+    if (JSZ.uiManager.isPreviewMode) {
+        document.getElementById("zcontent-preview").innerHTML = renderMarkdown(JSZ.data.zettel[key].content);
+    }
+
     document.getElementById("nextz").value = JSZ.data.currentKey; // Display the key of the zettel *before* this new one
     document.getElementById("zdate").value = JSZ.data.zettel[key].creation;
     document.getElementById("zcount").value = Object.keys(JSZ.data.zettel).length;
@@ -903,3 +908,67 @@ observer.observe(document.body, {
     subtree: true
 });
 */
+
+// ============================================================================
+// Markdown Preview Logic
+// ============================================================================
+
+JSZ.uiManager.isPreviewMode = false;
+
+function togglePreviewMode() {
+    var previewBtn = document.getElementById("preview-toggle-btn");
+    var editor = document.getElementById("zcontent");
+    var preview = document.getElementById("zcontent-preview");
+    
+    JSZ.uiManager.isPreviewMode = !JSZ.uiManager.isPreviewMode;
+    
+    if (JSZ.uiManager.isPreviewMode) {
+        previewBtn.innerText = "Edit";
+        editor.style.display = "none";
+        preview.style.display = "block";
+        
+        // Grab latest from editor
+        preview.innerHTML = renderMarkdown(editor.value);
+    } else {
+        previewBtn.innerText = "Preview";
+        preview.style.display = "none";
+        editor.style.display = "block";
+    }
+}
+
+function renderMarkdown(text) {
+    // 1. Escape HTML
+    var escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
+    // 2. Convert headers
+    var withHeaders = escaped.replace(/^(#{1,6})\s+(.*)$/gm, function(match, hashes, content) {
+        var level = hashes.length;
+        return '<h' + level + '>' + content + '</h' + level + '>';
+    });
+    
+    // 2.5 Convert Links
+    var withLinks = withHeaders.replace(/\[\[(.*?)\]\]/g, function(match, key) {
+        return '<a href="javascript:void(0)" onclick="showObj(\'' + key + '\')" style="font-weight: bold; text-decoration: underline; cursor: pointer;">[[ ' + key + ' ]]</a>';
+    });
+    
+    withLinks = withLinks.replace(/&lt;&lt;(.*?)&gt;&gt;/g, function(match, url) {
+        return '<a href="' + url + '" target="_blank" style="text-decoration: underline; cursor: pointer; font-style: italic;">' + url + '</a>';
+    });
+    
+    // 3. Convert paragraphs
+    var blocks = withLinks.split(/\n\s*\n/);
+    var html = blocks.map(function(block) {
+        block = block.trim();
+        if (!block) return '';
+        
+        // If it's a pure header block, don't wrap in <p>
+        if (/^<h[1-6]>.*<\/h[1-6]>$/.test(block)) {
+            return block;
+        }
+        
+        // Convert single newlines to <br> for standard Markdown rendering
+        return '<p>' + block.replace(/\n/g, '<br>') + '</p>';
+    }).join('\n');
+    
+    return html;
+}

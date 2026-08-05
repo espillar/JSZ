@@ -38,6 +38,7 @@
   <div class="header-actions">
     <button onclick="openSearchSidebar()">Search</button>
     <button onclick="readObj()" class="save-btn">Parse & Save</button>
+    <button id="preview-toggle-btn" onclick="togglePreviewMode()">Preview</button>
     <button onclick="openSettings()">Settings</button>
     <button onclick="deleteCurrentZettel()" class="delete-btn">Delete</button>
   </div>
@@ -85,6 +86,7 @@
 <div class="wrapper">
   <div id="col2" class="editor-col">
     <textarea id="zcontent">Current Zettel content</textarea>
+    <div id="zcontent-preview" style="display: none;"></div>
   </div>
   <div class="links-col">
     <div class="link-section">
