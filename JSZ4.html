@@ -89,12 +89,15 @@
   </div>
 </div>
 
-<div class="wrapper">
+<div class="wrapper" id="main-wrapper">
   <!-- Left Editor Column -->
   <div id="col2" class="editor-col">
     <textarea id="zcontent" placeholder="Zettel content"></textarea>
     <div id="zcontent-preview" style="display: none;"></div>
   </div>
+
+  <!-- Resizer between Left and Right Panes -->
+  <div id="resizer-split" class="resizer-vertical" style="display: none;" title="Drag to resize panes"></div>
 
   <!-- Right / Secondary Document Column -->
   <div id="col-right" class="editor-col secondary-editor-col" style="display: none;">
@@ -117,8 +120,11 @@
     </div>
   </div>
 
+  <!-- Resizer between Editor(s) and Links Column -->
+  <div id="resizer-links" class="resizer-vertical" title="Drag to resize links column"></div>
+
   <!-- Links Column -->
-  <div class="links-col">
+  <div id="col-links" class="links-col">
     <div class="link-section">
       <h3>Outgoing Links</h3>
       <div id="forwardbuttons"></div>
@@ -130,6 +136,9 @@
     </div>
   </div>
 </div>
+
+<!-- Horizontal Height Resizer -->
+<div id="resizer-bottom" class="resizer-horizontal" title="Drag to resize height"></div>
 
 <div class="status-bar">
   <span>Date Created: <input type="text" id="zdate" class="status-input" readonly></span>

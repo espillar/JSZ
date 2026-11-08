@@ -74,6 +74,10 @@ Functions dedicated to parsing and maintaining relationships between notes.
 *   **`download(text)`**: Triggers a browser download prompt allowing the user to save their Zettelkasten as a `.json` file.
 *   **`pullfiles()`**: Triggered by the `<input type="file">` element. Reads a user-selected JSON file using `FileReader` and merges its contents into `JSZ.data.zettel`.
 
+### Pane Resizing & Boundary Management
+*   **Vertical Resizers (`#resizer-split`, `#resizer-links`)**: Allow dragging the boundary edges between panes horizontally. Clamping ensures all panes maintain their minimum width (180px for editor panes, 150px for links column) and prevents panes from overlapping or pushing each other off-screen.
+*   **Horizontal Resizer (`#resizer-bottom`)**: Allows dragging the bottom edge to adjust the height of the entire workspace between 180px and the viewport boundary. Dimensions are persisted to browser `localStorage`.
+
 ## HTML to JS Bindings
 Key UI elements in `JSZ4.html` map directly to Javascript logic:
 *   `zkey` textarea: Contains the ID of the current Zettel.

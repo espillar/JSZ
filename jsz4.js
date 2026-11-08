@@ -527,16 +527,12 @@ function togglePreviewMode() {
     JSZ.uiManager.isPreviewMode = !JSZ.uiManager.isPreviewMode;
 
     if (JSZ.uiManager.isPreviewMode) {
-        previewBtn.innerText = "Edit";
-        preview.style.width = window.getComputedStyle(editor).width;
-        preview.style.height = window.getComputedStyle(editor).height;
+        if (previewBtn) previewBtn.innerText = "Edit";
         editor.style.display = "none";
         preview.style.display = "block";
         preview.innerHTML = renderMarkdown(editor.value);
     } else {
-        previewBtn.innerText = "Preview";
-        editor.style.width = window.getComputedStyle(preview).width;
-        editor.style.height = window.getComputedStyle(preview).height;
+        if (previewBtn) previewBtn.innerText = "Preview";
         preview.style.display = "none";
         editor.style.display = "block";
     }
@@ -602,8 +598,17 @@ function openSplitView(initialKey) {
     const wrapper = document.querySelector(".wrapper");
     if (wrapper) wrapper.classList.add("split-active");
 
+    const colLeft = document.getElementById("col2");
     const colRight = document.getElementById("col-right");
+    const resizerSplit = document.getElementById("resizer-split");
+
+    if (resizerSplit) resizerSplit.style.display = "flex";
     if (colRight) colRight.style.display = "flex";
+
+    if (colLeft && colRight) {
+        colLeft.style.flex = "1 1 0";
+        colRight.style.flex = "1 1 0";
+    }
 
     const splitBtn = document.getElementById("split-view-btn");
     if (splitBtn) splitBtn.innerText = "Close Split";
@@ -636,8 +641,13 @@ function closeSplitView() {
     const wrapper = document.querySelector(".wrapper");
     if (wrapper) wrapper.classList.remove("split-active");
 
+    const colLeft = document.getElementById("col2");
     const colRight = document.getElementById("col-right");
+    const resizerSplit = document.getElementById("resizer-split");
+
+    if (resizerSplit) resizerSplit.style.display = "none";
     if (colRight) colRight.style.display = "none";
+    if (colLeft) colLeft.style.flex = "1 1 0";
 
     const splitBtn = document.getElementById("split-view-btn");
     if (splitBtn) splitBtn.innerText = "Split View";
@@ -736,13 +746,11 @@ function toggleRightPreviewMode() {
 
     if (JSZ.uiManager.isRightPreviewMode) {
         if (previewBtn) previewBtn.innerText = "Edit";
-        preview.style.height = window.getComputedStyle(editor).height;
         editor.style.display = "none";
         preview.style.display = "block";
         preview.innerHTML = renderMarkdown(editor.value);
     } else {
         if (previewBtn) previewBtn.innerText = "Preview";
-        editor.style.height = window.getComputedStyle(preview).height;
         preview.style.display = "none";
         editor.style.display = "block";
     }
@@ -979,8 +987,147 @@ window.addEventListener("click", function(event) {
     }
 });
 
+// ============================================================================
+// Draggable Pane Resizing (Boundary & Overlap Protection)
+// ============================================================================
+
+function initResizeHandlers() {
+    const resizerSplit = document.getElementById("resizer-split");
+    const resizerLinks = document.getElementById("resizer-links");
+    const resizerBottom = document.getElementById("resizer-bottom");
+    const colLeft = document.getElementById("col2");
+    const colRight = document.getElementById("col-right");
+    const colLinks = document.getElementById("col-links");
+    const wrapper = document.getElementById("main-wrapper") || document.querySelector(".wrapper");
+
+    const MIN_PANE_WIDTH = 180;
+    const MIN_LINKS_WIDTH = 150;
+    const MIN_HEIGHT = 180;
+
+    function attachDrag(resizer, onMove, onEnd) {
+        if (!resizer) return;
+        resizer.addEventListener("mousedown", function(e) {
+            e.preventDefault();
+            resizer.classList.add("resizing");
+            document.body.classList.add("is-resizing");
+
+            function moveHandler(moveEvent) {
+                onMove(moveEvent);
+            }
+            function upHandler() {
+                resizer.classList.remove("resizing");
+                document.body.classList.remove("is-resizing");
+                window.removeEventListener("mousemove", moveHandler);
+                window.removeEventListener("mouseup", upHandler);
+                if (onEnd) onEnd();
+            }
+            window.addEventListener("mousemove", moveHandler);
+            window.addEventListener("mouseup", upHandler);
+        });
+    }
+
+    // 1. Resizer Split: Adjusts boundary between Left and Right Panes
+    let splitStartX, splitLeftStartW, splitRightStartW;
+    if (resizerSplit) {
+        resizerSplit.addEventListener("mousedown", function(e) {
+            splitStartX = e.clientX;
+            splitLeftStartW = colLeft ? colLeft.getBoundingClientRect().width : 0;
+            splitRightStartW = colRight ? colRight.getBoundingClientRect().width : 0;
+        });
+        attachDrag(
+            resizerSplit,
+            function(e) {
+                if (!colLeft || !colRight) return;
+                const delta = e.clientX - splitStartX;
+                const totalWidth = splitLeftStartW + splitRightStartW;
+
+                let newLeft = Math.max(MIN_PANE_WIDTH, Math.min(totalWidth - MIN_PANE_WIDTH, splitLeftStartW + delta));
+                let newRight = totalWidth - newLeft;
+
+                colLeft.style.flex = `0 0 ${newLeft}px`;
+                colRight.style.flex = `0 0 ${newRight}px`;
+            },
+            function() {
+                if (colLeft && colRight) {
+                    localStorage.setItem("split_left_width", colLeft.offsetWidth);
+                    localStorage.setItem("split_right_width", colRight.offsetWidth);
+                }
+            }
+        );
+    }
+
+    // 2. Resizer Links: Adjusts boundary between active editor and Links column
+    let linksStartX, editorAdjacentStartW, linksStartW;
+    if (resizerLinks) {
+        resizerLinks.addEventListener("mousedown", function(e) {
+            linksStartX = e.clientX;
+            const adjacentPane = (JSZ.uiManager.isSplitActive && colRight) ? colRight : colLeft;
+            editorAdjacentStartW = adjacentPane ? adjacentPane.getBoundingClientRect().width : 0;
+            linksStartW = colLinks ? colLinks.getBoundingClientRect().width : 0;
+        });
+        attachDrag(
+            resizerLinks,
+            function(e) {
+                if (!colLinks) return;
+                const adjacentPane = (JSZ.uiManager.isSplitActive && colRight) ? colRight : colLeft;
+                if (!adjacentPane) return;
+
+                const delta = e.clientX - linksStartX;
+                const totalWidth = editorAdjacentStartW + linksStartW;
+
+                let newAdj = Math.max(MIN_PANE_WIDTH, Math.min(totalWidth - MIN_LINKS_WIDTH, editorAdjacentStartW + delta));
+                let newLinks = totalWidth - newAdj;
+
+                adjacentPane.style.flex = `0 0 ${newAdj}px`;
+                colLinks.style.flex = `0 0 ${newLinks}px`;
+            },
+            function() {
+                if (colLinks) {
+                    localStorage.setItem("links_width", colLinks.offsetWidth);
+                }
+            }
+        );
+    }
+
+    // 3. Resizer Bottom: Adjusts vertical height of the work area
+    let bottomStartY, wrapperStartH;
+    if (resizerBottom) {
+        resizerBottom.addEventListener("mousedown", function(e) {
+            bottomStartY = e.clientY;
+            wrapperStartH = wrapper ? wrapper.getBoundingClientRect().height : 0;
+        });
+        attachDrag(
+            resizerBottom,
+            function(e) {
+                if (!wrapper) return;
+                const delta = e.clientY - bottomStartY;
+                const maxH = window.innerHeight - 180;
+                let newH = Math.max(MIN_HEIGHT, Math.min(maxH, wrapperStartH + delta));
+                wrapper.style.height = `${newH}px`;
+            },
+            function() {
+                if (wrapper) {
+                    localStorage.setItem("panes_height", wrapper.offsetHeight);
+                }
+            }
+        );
+    }
+
+    // Restore saved height if available
+    const savedH = localStorage.getItem("panes_height");
+    if (savedH && wrapper) {
+        const parsedH = parseInt(savedH, 10);
+        if (parsedH >= MIN_HEIGHT && parsedH <= window.innerHeight - 150) {
+            wrapper.style.height = `${parsedH}px`;
+        }
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     document.body.appendChild(globalTooltip);
+
+    // Initialize draggable split and height resizers
+    initResizeHandlers();
 
     // Load from localStorage if present, otherwise default sample data
     const stored = localStorage.getItem("snapshot");

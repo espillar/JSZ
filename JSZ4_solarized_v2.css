@@ -39,18 +39,30 @@ h1 {
 .wrapper {
     display: flex;
     flex-direction: row;
-    gap: 20px;
-    margin-bottom: 50px; /* space for status bar */
+    height: calc(100vh - 250px);
+    min-height: 200px;
+    max-height: calc(100vh - 180px);
+    margin-bottom: 2px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 .editor-col {
-    flex: 0 0 auto;
+    flex: 1 1 0;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 .links-col {
-    flex-grow: 1;
-    min-width: 0;
-    padding-left: 20px;
-    border-left: 1px solid #002b36;
+    flex: 0 0 220px;
+    min-width: 150px;
+    padding-left: 15px;
+    padding-right: 5px;
     box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
 }
 .link-section h3 {
     margin-top: 0;
@@ -71,12 +83,12 @@ h1 {
 }
 
 #zcontent, #zcontent-preview {
-    width: 60vw;
-    height: calc(100vh - 300px);
-    min-width: 300px;
-    max-width: 85vw;
-    resize: both;
+    width: 100%;
+    height: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
     box-sizing: border-box;
+    resize: none;
 }
 
 #zcontent-preview {
@@ -326,30 +338,13 @@ body.search-open .status-bar {
     pointer-events: none;
 }
 
-/* Split View Layout */
-.wrapper.split-active {
-    gap: 15px;
-}
-.wrapper.split-active .editor-col {
-    flex: 1 1 0;
-    min-width: 260px;
-}
-.wrapper.split-active #zcontent,
-.wrapper.split-active #zcontent-preview,
-.wrapper.split-active #zcontent-right,
-.wrapper.split-active #zcontent-preview-right {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-}
-.wrapper.split-active .links-col {
-    flex: 0 0 200px;
-    min-width: 160px;
-}
+/* Split View & Resizers */
 .secondary-editor-col {
     display: flex;
     flex-direction: column;
+    min-width: 180px;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 .secondary-header {
     display: flex;
@@ -385,11 +380,20 @@ body.search-open .status-bar {
     padding: 2px 7px;
     cursor: pointer;
 }
+.secondary-content-wrap {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+}
 #zcontent-right, #zcontent-preview-right {
     width: 100%;
-    height: calc(100vh - 300px);
-    resize: vertical;
+    height: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
     box-sizing: border-box;
+    resize: none;
 }
 #zcontent-preview-right {
     overflow-y: auto;
@@ -405,4 +409,70 @@ body.search-open .status-bar {
 }
 #zcontent-preview-right p {
     margin-bottom: 1em;
+}
+
+/* Draggable Resizers */
+.resizer-vertical {
+    flex: 0 0 8px;
+    cursor: col-resize;
+    background: transparent;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease;
+    z-index: 5;
+    border-left: 1px solid #002b36;
+}
+.resizer-vertical::after {
+    content: "";
+    width: 2px;
+    height: 40px;
+    border-radius: 2px;
+    background-color: #586e75;
+}
+.resizer-vertical:hover, .resizer-vertical.resizing {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+.resizer-vertical:hover::after, .resizer-vertical.resizing::after {
+    background-color: #268bd2;
+    height: 100%;
+    width: 3px;
+}
+
+.resizer-horizontal {
+    height: 8px;
+    cursor: row-resize;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 45px;
+    transition: background-color 0.15s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    z-index: 5;
+    border-top: 1px solid #002b36;
+}
+.resizer-horizontal::after {
+    content: "";
+    height: 2px;
+    width: 50px;
+    border-radius: 2px;
+    background-color: #586e75;
+}
+.resizer-horizontal:hover, .resizer-horizontal.resizing {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+.resizer-horizontal:hover::after, .resizer-horizontal.resizing::after {
+    background-color: #268bd2;
+    width: 100%;
+    height: 3px;
+}
+
+body.is-resizing {
+    user-select: none !important;
+    -webkit-user-select: none !important;
 }
