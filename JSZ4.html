@@ -41,24 +41,8 @@
   <h1>JSZ4</h1>
   <div class="header-actions">
     <button onclick="openSearchSidebar()">Search</button>
-    <button onclick="readObj()" class="save-btn">Parse & Save</button>
-    <button id="preview-toggle-btn" onclick="togglePreviewMode()">Preview</button>
     <button id="split-view-btn" onclick="toggleSplitView()">Split View</button>
-    <button onclick="renameCurrentZettel()">Rename</button>
     <button onclick="openSettings()">Settings</button>
-    <button onclick="deleteCurrentZettel()" class="delete-btn">Delete</button>
-  </div>
-</div>
-
-<!-- Zettel Metadata -->
-<div class="metadata-row">
-  <div class="input-group">
-    <label for="zkey">Key</label>
-    <input type="text" id="zkey" placeholder="Key">
-  </div>
-  <div class="input-group tags-group">
-    <label for="zname">Tags</label>
-    <input type="text" id="zname" placeholder="Enter tags here">
   </div>
 </div>
 
@@ -89,34 +73,75 @@
   </div>
 </div>
 
+<!-- Shared Key Autocomplete Datalist -->
+<datalist id="zettel-keys-list"></datalist>
+
 <div class="wrapper" id="main-wrapper">
   <!-- Left Editor Column -->
-  <div id="col2" class="editor-col">
-    <textarea id="zcontent" placeholder="Zettel content"></textarea>
-    <div id="zcontent-preview" style="display: none;"></div>
+  <div id="col2" class="editor-col pane-col active-pane">
+    <div class="pane-header">
+      <div class="pane-header-top">
+        <div class="pane-nav">
+          <label for="zkey"><strong id="pane-label-left">Note:</strong></label>
+          <input type="text" id="zkey" list="zettel-keys-list" placeholder="Select or type key..." onkeydown="if(event.key==='Enter') showLeftObjFromInput()">
+          <button onclick="showLeftObjFromInput()" title="Go to Zettel">Go</button>
+        </div>
+        <div class="pane-actions">
+          <button onclick="saveLeftObj()" class="save-btn" title="Save Zettel (Ctrl+P)">Save</button>
+          <button id="preview-toggle-btn" onclick="toggleLeftPreviewMode()" title="Toggle Markdown Preview">Preview</button>
+          <button onclick="renameLeftZettel()" title="Rename this Zettel">Rename</button>
+          <button onclick="deleteLeftZettel()" class="delete-btn" title="Delete this Zettel">Delete</button>
+        </div>
+      </div>
+      <div class="pane-header-bottom">
+        <div class="input-group tags-group">
+          <label for="zname">Tags:</label>
+          <input type="text" id="zname" placeholder="Enter tags here">
+        </div>
+      </div>
+    </div>
+    <div class="pane-content-wrap">
+      <textarea id="zcontent" placeholder="Zettel content"></textarea>
+      <div id="zcontent-preview" style="display: none;"></div>
+    </div>
+    <div class="pane-footer">
+      <span>Date Created: <input type="text" id="zdate" class="status-input" readonly></span>
+    </div>
   </div>
 
   <!-- Resizer between Left and Right Panes -->
   <div id="resizer-split" class="resizer-vertical" style="display: none;" title="Drag to resize panes"></div>
 
   <!-- Right / Secondary Document Column -->
-  <div id="col-right" class="editor-col secondary-editor-col" style="display: none;">
-    <div class="secondary-header">
-      <div class="secondary-nav">
-        <label for="zkey-right"><strong>Right:</strong></label>
-        <input type="text" id="zkey-right" list="zettel-keys-list" placeholder="Select or type key...">
-        <datalist id="zettel-keys-list"></datalist>
-        <button onclick="showRightObjFromInput()">Go</button>
+  <div id="col-right" class="editor-col pane-col secondary-editor-col" style="display: none;">
+    <div class="pane-header">
+      <div class="pane-header-top">
+        <div class="pane-nav">
+          <label for="zkey-right"><strong id="pane-label-right">Right:</strong></label>
+          <input type="text" id="zkey-right" list="zettel-keys-list" placeholder="Select or type key..." onkeydown="if(event.key==='Enter') showRightObjFromInput()">
+          <button onclick="showRightObjFromInput()" title="Go to Zettel">Go</button>
+        </div>
+        <div class="pane-actions">
+          <button onclick="saveRightObj()" class="save-btn" title="Save Zettel">Save</button>
+          <button id="preview-toggle-btn-right" onclick="toggleRightPreviewMode()" title="Toggle Markdown Preview">Preview</button>
+          <button onclick="renameRightZettel()" title="Rename this Zettel">Rename</button>
+          <button onclick="deleteRightZettel()" class="delete-btn" title="Delete this Zettel">Delete</button>
+          <button onclick="closeSplitView()" class="close-split-btn" title="Close Split View">&times;</button>
+        </div>
       </div>
-      <div class="secondary-actions">
-        <button id="preview-toggle-btn-right" onclick="toggleRightPreviewMode()">Preview</button>
-        <button onclick="saveRightObj()" class="save-btn">Save</button>
-        <button onclick="closeSplitView()" class="close-split-btn" title="Close Split View">&times;</button>
+      <div class="pane-header-bottom">
+        <div class="input-group tags-group">
+          <label for="zname-right">Tags:</label>
+          <input type="text" id="zname-right" placeholder="Enter tags here">
+        </div>
       </div>
     </div>
-    <div class="secondary-content-wrap">
+    <div class="pane-content-wrap">
       <textarea id="zcontent-right" placeholder="Right Zettel content"></textarea>
       <div id="zcontent-preview-right" style="display: none;"></div>
+    </div>
+    <div class="pane-footer">
+      <span>Date Created: <input type="text" id="zdate-right" class="status-input" readonly></span>
     </div>
   </div>
 
@@ -125,6 +150,15 @@
 
   <!-- Links Column -->
   <div id="col-links" class="links-col">
+    <div class="links-header-wrap">
+      <div class="links-tab-bar" id="links-tab-bar" style="display: none;">
+        <button id="tab-links-left" class="links-tab active" onclick="switchLinksTab('left')">Left Note</button>
+        <button id="tab-links-right" class="links-tab" onclick="switchLinksTab('right')">Right Note</button>
+      </div>
+      <div class="links-active-title" id="links-active-title">
+        Links for: <strong id="links-current-key">top</strong>
+      </div>
+    </div>
     <div class="link-section">
       <h3>Outgoing Links</h3>
       <div id="forwardbuttons"></div>
@@ -141,8 +175,8 @@
 <div id="resizer-bottom" class="resizer-horizontal" title="Drag to resize height"></div>
 
 <div class="status-bar">
-  <span>Date Created: <input type="text" id="zdate" class="status-input" readonly></span>
   <span>Total Zettels: <input type="text" id="zcount" class="status-input" readonly></span>
+  <span id="active-pane-status">Active Pane: Left</span>
 </div>
 
 </body>

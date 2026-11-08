@@ -39,9 +39,9 @@ h1 {
 .wrapper {
     display: flex;
     flex-direction: row;
-    height: calc(100vh - 250px);
+    height: calc(100vh - 170px);
     min-height: 200px;
-    max-height: calc(100vh - 180px);
+    max-height: calc(100vh - 110px);
     margin-bottom: 2px;
     box-sizing: border-box;
     overflow: hidden;
@@ -338,30 +338,50 @@ body.search-open .status-bar {
     pointer-events: none;
 }
 
-/* Split View & Resizers */
-.secondary-editor-col {
+/* Symmetrical Pane Columns & Components */
+.pane-col {
+    flex: 1 1 0;
+    min-width: 180px;
     display: flex;
     flex-direction: column;
-    min-width: 180px;
     overflow: hidden;
     box-sizing: border-box;
+    border: 1px solid transparent;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: border-color 0.15s ease;
 }
-.secondary-header {
+
+.pane-col.active-pane {
+    border-color: #586e75;
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.pane-header {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 6px;
+}
+
+.pane-header-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
     gap: 6px;
+    flex-wrap: wrap;
 }
-.secondary-nav {
+
+.pane-nav {
     display: flex;
     align-items: center;
     gap: 6px;
-    flex-grow: 1;
+    flex: 1 1 160px;
 }
-.secondary-nav input {
-    flex-grow: 1;
-    min-width: 100px;
+
+.pane-nav input {
+    flex: 1 1 auto;
+    min-width: 90px;
     padding: 3px 6px;
     border: 1px solid rgb(162, 169, 233);
     background-color: #002b36;
@@ -369,24 +389,79 @@ body.search-open .status-bar {
     font-size: inherit;
     font-family: inherit;
 }
-.secondary-actions {
+
+.pane-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pane-actions button {
+    padding: 3px 8px;
+    font-size: 0.9em;
+}
+
+.pane-header-bottom {
     display: flex;
     align-items: center;
     gap: 6px;
 }
+
+.pane-header-bottom .tags-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1 1 auto;
+    margin: 0;
+}
+
+.pane-header-bottom .tags-group label {
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.pane-header-bottom .tags-group input {
+    flex: 1 1 auto;
+    width: 100%;
+    padding: 3px 6px;
+    border: 1px solid rgb(162, 169, 233);
+    background-color: #002b36;
+    color: #93a1a1;
+}
+
 .close-split-btn {
     font-weight: bold;
     font-size: 1.1em;
     padding: 2px 7px;
     cursor: pointer;
 }
-.secondary-content-wrap {
+
+.pane-content-wrap, .secondary-content-wrap {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
     min-height: 0;
     width: 100%;
 }
+
+.pane-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85em;
+    padding: 3px 2px 0 2px;
+    color: #93a1a1;
+}
+
+.pane-footer .status-input {
+    width: 95px;
+    padding: 1px 4px;
+    font-size: 0.9em;
+    background: transparent;
+    border: none;
+    color: #93a1a1;
+}
+
 #zcontent-right, #zcontent-preview-right {
     width: 100%;
     height: 100%;
@@ -409,6 +484,44 @@ body.search-open .status-bar {
 }
 #zcontent-preview-right p {
     margin-bottom: 1em;
+}
+
+/* Links Column & Focus Tabs */
+.links-header-wrap {
+    margin-bottom: 8px;
+}
+
+.links-tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.links-tab {
+    flex: 1 1 0;
+    padding: 3px 5px;
+    font-size: 0.82em;
+    cursor: pointer;
+    background-color: #073642;
+    border: 1px solid rgb(162, 169, 233);
+    color: #93a1a1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.links-tab.active {
+    background-color: #268bd2;
+    color: #fdf6e3;
+    font-weight: bold;
+}
+
+.links-active-title {
+    font-size: 0.88em;
+    color: #93a1a1;
+    word-break: break-all;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #073642;
 }
 
 /* Draggable Resizers */

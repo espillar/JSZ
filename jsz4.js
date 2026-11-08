@@ -10,7 +10,9 @@ var JSZ = {
     data: {
         zettel: {},
         currentKey: "top",
-        rightKey: null
+        rightKey: null,
+        activePane: "left",
+        linksViewPane: "left"
     },
     dataManager: {},
     uiManager: {},
@@ -158,8 +160,11 @@ function pokeReverseLinks(sourceKey) {
     }
 }
 
-function deleteCurrentZettel() {
-    const key = document.getElementById("zkey").value.trim();
+function deletePaneZettel(pane = "left") {
+    const isRight = (pane === "right");
+    const keyField = isRight ? document.getElementById("zkey-right") : document.getElementById("zkey");
+    const key = keyField ? keyField.value.trim() : (isRight ? JSZ.data.rightKey : JSZ.data.currentKey);
+
     if (!key || !JSZ.data.zettel[key]) {
         alert("No Zettel selected or Zettel does not exist.");
         return;
@@ -176,13 +181,6 @@ function deleteCurrentZettel() {
 
     delete JSZ.data.zettel[key];
 
-    if (JSZ.data.rightKey === key) {
-        JSZ.data.rightKey = null;
-        if (JSZ.uiManager.isSplitActive) {
-            closeSplitView();
-        }
-    }
-
     // Remove reference from all outgoing links
     for (const k of Object.keys(JSZ.data.zettel)) {
         if (JSZ.data.zettel[k]?.links) {
@@ -191,8 +189,42 @@ function deleteCurrentZettel() {
     }
 
     cleanBackList();
-    showObj("top", false);
+    populateKeyList();
+
+    if (isRight) {
+        if (JSZ.data.rightKey === key) {
+            JSZ.data.rightKey = null;
+        }
+        const remainingKeys = Object.keys(JSZ.data.zettel).filter(k => k !== JSZ.data.currentKey);
+        if (remainingKeys.length > 0) {
+            showRightObj(remainingKeys[0], false);
+        } else {
+            closeSplitView();
+        }
+    } else {
+        if (JSZ.data.rightKey === key) {
+            JSZ.data.rightKey = null;
+            if (JSZ.uiManager.isSplitActive) {
+                closeSplitView();
+            }
+        }
+        showObj("top", false);
+    }
+
+    updateLinksColumn();
     alert(`Zettel '${key}' deleted.`);
+}
+
+function deleteLeftZettel() {
+    deletePaneZettel("left");
+}
+
+function deleteRightZettel() {
+    deletePaneZettel("right");
+}
+
+function deleteCurrentZettel() {
+    deletePaneZettel(JSZ.data.activePane || "left");
 }
 
 function escapeRegex(string) {
@@ -273,16 +305,29 @@ function renameZettel(oldKey, newKey) {
         showObj(JSZ.data.currentKey, false);
     }
 
+    if (JSZ.uiManager.isSplitActive && JSZ.data.rightKey) {
+        showRightObj(JSZ.data.rightKey, false);
+    }
+
+    populateKeyList();
+    updateLinksColumn();
+
     return true;
 }
 
 JSZ.dataManager.renameZettel = renameZettel;
 
-function renameCurrentZettel() {
-    // Save any pending edits first
-    readObjNoShow();
+function renamePaneZettel(pane = "left") {
+    const isRight = (pane === "right");
+    if (isRight) {
+        saveRightObj();
+    } else {
+        readObjNoShow();
+    }
 
-    const currentKey = document.getElementById("zkey").value.trim();
+    const keyField = isRight ? document.getElementById("zkey-right") : document.getElementById("zkey");
+    const currentKey = keyField ? keyField.value.trim() : (isRight ? JSZ.data.rightKey : JSZ.data.currentKey);
+
     if (!currentKey || !JSZ.dataManager.zettelExists(currentKey)) {
         alert("No active Zettel to rename.");
         return;
@@ -302,6 +347,18 @@ function renameCurrentZettel() {
     if (renameZettel(currentKey, trimmedNew)) {
         alert(`Zettel '${currentKey}' successfully renamed to '${trimmedNew}'.`);
     }
+}
+
+function renameLeftZettel() {
+    renamePaneZettel("left");
+}
+
+function renameRightZettel() {
+    renamePaneZettel("right");
+}
+
+function renameCurrentZettel() {
+    renamePaneZettel(JSZ.data.activePane || "left");
 }
 
 // ============================================================================
@@ -464,7 +521,7 @@ function getZettelTooltip(key) {
     return `Zettel Key: ${key} (Content and Tags are empty)${hint}`;
 }
 
-function makeJumpButton(str, tofield) {
+function makeJumpButton(str, tofield, targetPane = null) {
     if (!JSZ.dataManager.zettelExists(str)) {
         makeEmpty(str);
     }
@@ -477,10 +534,22 @@ function makeJumpButton(str, tofield) {
     btn.onmousemove = function(e) { showTooltip(e, this.dataset.tooltip); };
     btn.onmouseout = hideTooltip;
     btn.onclick = function(e) {
+        hideTooltip();
+        const effectiveTarget = targetPane || JSZ.data.activePane || 'left';
         if (e && (e.altKey || (JSZ.uiManager.isSplitActive && e.shiftKey))) {
-            showRightObj(str);
+            // Open across in the other pane
+            if (effectiveTarget === 'right') {
+                showObj(str);
+            } else {
+                showRightObj(str);
+            }
         } else {
-            showObj(str);
+            // Open in effectiveTarget pane
+            if (effectiveTarget === 'right' && JSZ.uiManager.isSplitActive) {
+                showRightObj(str);
+            } else {
+                showObj(str);
+            }
         }
     };
     container.appendChild(btn);
@@ -520,9 +589,14 @@ function makeExternalLinkButton(url, tofield) {
 // ============================================================================
 
 function togglePreviewMode() {
+    toggleLeftPreviewMode();
+}
+
+function toggleLeftPreviewMode() {
     const previewBtn = document.getElementById("preview-toggle-btn");
     const editor = document.getElementById("zcontent");
     const preview = document.getElementById("zcontent-preview");
+    if (!editor || !preview) return;
 
     JSZ.uiManager.isPreviewMode = !JSZ.uiManager.isPreviewMode;
 
@@ -530,7 +604,7 @@ function togglePreviewMode() {
         if (previewBtn) previewBtn.innerText = "Edit";
         editor.style.display = "none";
         preview.style.display = "block";
-        preview.innerHTML = renderMarkdown(editor.value);
+        preview.innerHTML = renderMarkdown(editor.value, "left");
     } else {
         if (previewBtn) previewBtn.innerText = "Preview";
         preview.style.display = "none";
@@ -538,7 +612,27 @@ function togglePreviewMode() {
     }
 }
 
-function renderMarkdown(text) {
+function toggleRightPreviewMode() {
+    const previewBtn = document.getElementById("preview-toggle-btn-right");
+    const editor = document.getElementById("zcontent-right");
+    const preview = document.getElementById("zcontent-preview-right");
+    if (!editor || !preview) return;
+
+    JSZ.uiManager.isRightPreviewMode = !JSZ.uiManager.isRightPreviewMode;
+
+    if (JSZ.uiManager.isRightPreviewMode) {
+        if (previewBtn) previewBtn.innerText = "Edit";
+        editor.style.display = "none";
+        preview.style.display = "block";
+        preview.innerHTML = renderMarkdown(editor.value, "right");
+    } else {
+        if (previewBtn) previewBtn.innerText = "Preview";
+        preview.style.display = "none";
+        editor.style.display = "block";
+    }
+}
+
+function renderMarkdown(text, sourcePane = "left") {
     if (!text) return "";
 
     // 1. Escape HTML
@@ -555,7 +649,11 @@ function renderMarkdown(text) {
         const key = rawKey.trim();
         if (!key) return "";
         const safeTooltip = getZettelTooltip(key).replace(/"/g, "&quot;");
-        return `<a href="javascript:void(0)" data-tooltip="${safeTooltip}" onmousemove="showTooltip(event, this.dataset.tooltip)" onmouseout="hideTooltip()" onclick="if (event && (event.altKey || (JSZ.uiManager.isSplitActive && event.shiftKey))) { if (!JSZ.dataManager.zettelExists('${key}')) { makeEmpty('${key}'); } hideTooltip(); showRightObj('${key}'); } else { if (!JSZ.dataManager.zettelExists('${key}')) { makeEmpty('${key}'); } hideTooltip(); showObj('${key}'); }" style="font-weight: bold; text-decoration: underline; cursor: pointer;">[[ ${key} ]]</a>`;
+        if (sourcePane === "right") {
+            return `<a href="javascript:void(0)" data-tooltip="${safeTooltip}" onmousemove="showTooltip(event, this.dataset.tooltip)" onmouseout="hideTooltip()" onclick="if (event && (event.altKey || (JSZ.uiManager.isSplitActive && event.shiftKey))) { if (!JSZ.dataManager.zettelExists('${key}')) { makeEmpty('${key}'); } hideTooltip(); showObj('${key}'); } else { if (!JSZ.dataManager.zettelExists('${key}')) { makeEmpty('${key}'); } hideTooltip(); showRightObj('${key}'); }" style="font-weight: bold; text-decoration: underline; cursor: pointer;">[[ ${key} ]]</a>`;
+        } else {
+            return `<a href="javascript:void(0)" data-tooltip="${safeTooltip}" onmousemove="showTooltip(event, this.dataset.tooltip)" onmouseout="hideTooltip()" onclick="if (event && (event.altKey || (JSZ.uiManager.isSplitActive && event.shiftKey))) { if (!JSZ.dataManager.zettelExists('${key}')) { makeEmpty('${key}'); } hideTooltip(); showRightObj('${key}'); } else { if (!JSZ.dataManager.zettelExists('${key}')) { makeEmpty('${key}'); } hideTooltip(); showObj('${key}'); }" style="font-weight: bold; text-decoration: underline; cursor: pointer;">[[ ${key} ]]</a>`;
+        }
     });
 
     // 4. External Links <<url>>
@@ -575,10 +673,11 @@ function renderMarkdown(text) {
 }
 
 // ============================================================================
-// Secondary / Split View Management
+// Dual-Pane & Split View Management
 // ============================================================================
 
 JSZ.uiManager.isSplitActive = false;
+JSZ.uiManager.isPreviewMode = false;
 JSZ.uiManager.isRightPreviewMode = false;
 
 function populateKeyList() {
@@ -589,7 +688,116 @@ function populateKeyList() {
     for (const k of allKeys) {
         const option = document.createElement("option");
         option.value = k;
+        const note = JSZ.data.zettel[k];
+        if (note && note.name) {
+            option.label = note.name;
+        }
         datalist.appendChild(option);
+    }
+}
+
+function setActivePane(pane) {
+    if (pane !== "left" && pane !== "right") return;
+    JSZ.data.activePane = pane;
+
+    const colLeft = document.getElementById("col2");
+    const colRight = document.getElementById("col-right");
+    const statusText = document.getElementById("active-pane-status");
+
+    if (pane === "left") {
+        if (colLeft) colLeft.classList.add("active-pane");
+        if (colRight) colRight.classList.remove("active-pane");
+        if (statusText) statusText.textContent = "Active Pane: Left";
+    } else {
+        if (colRight) colRight.classList.add("active-pane");
+        if (colLeft) colLeft.classList.remove("active-pane");
+        if (statusText) statusText.textContent = "Active Pane: Right";
+    }
+
+    if (JSZ.uiManager.isSplitActive) {
+        switchLinksTab(pane);
+    }
+}
+
+function switchLinksTab(pane) {
+    if (pane !== "left" && pane !== "right") return;
+    JSZ.data.linksViewPane = pane;
+
+    const tabLeft = document.getElementById("tab-links-left");
+    const tabRight = document.getElementById("tab-links-right");
+    if (tabLeft && tabRight) {
+        if (pane === "left") {
+            tabLeft.classList.add("active");
+            tabRight.classList.remove("active");
+        } else {
+            tabRight.classList.add("active");
+            tabLeft.classList.remove("active");
+        }
+    }
+    updateLinksColumn();
+}
+
+function updateLinksColumn() {
+    const pane = (JSZ.uiManager.isSplitActive && JSZ.data.linksViewPane === "right") ? "right" : "left";
+    const key = (pane === "right") ? JSZ.data.rightKey : JSZ.data.currentKey;
+
+    const currentKeySpan = document.getElementById("links-current-key");
+    if (currentKeySpan) currentKeySpan.textContent = key || "none";
+
+    const tabBar = document.getElementById("links-tab-bar");
+    if (tabBar) {
+        if (JSZ.uiManager.isSplitActive) {
+            tabBar.style.display = "flex";
+            const tabLeft = document.getElementById("tab-links-left");
+            const tabRight = document.getElementById("tab-links-right");
+            if (tabLeft) tabLeft.textContent = `Left: ${JSZ.data.currentKey || "none"}`;
+            if (tabRight) tabRight.textContent = `Right: ${JSZ.data.rightKey || "none"}`;
+            if (JSZ.data.linksViewPane === "right") {
+                if (tabRight) tabRight.classList.add("active");
+                if (tabLeft) tabLeft.classList.remove("active");
+            } else {
+                if (tabLeft) tabLeft.classList.add("active");
+                if (tabRight) tabRight.classList.remove("active");
+            }
+        } else {
+            tabBar.style.display = "none";
+        }
+    }
+
+    const forwardDiv = document.getElementById("forwardbuttons");
+    const reverseDiv = document.getElementById("reversebuttons");
+    if (!forwardDiv || !reverseDiv) return;
+
+    forwardDiv.innerHTML = "";
+    reverseDiv.innerHTML = "";
+
+    if (!key || !JSZ.data.zettel[key]) return;
+    const note = JSZ.data.zettel[key];
+
+    // Outgoing links
+    if (note.links && note.links.length > 0) {
+        for (const linkKey of note.links) {
+            makeJumpButton(linkKey, "forwardbuttons", pane);
+        }
+    }
+
+    // Outgoing file / URL links
+    if (note.fileLinks && note.fileLinks.length > 0) {
+        if (note.links && note.links.length > 0) {
+            const hr = document.createElement("hr");
+            hr.className = "link-divider";
+            forwardDiv.appendChild(hr);
+        }
+        for (const url of note.fileLinks) {
+            makeExternalLinkButton(url, "forwardbuttons");
+        }
+    }
+
+    // Incoming links (backlinks)
+    if (note.backlinks && note.backlinks.length > 0) {
+        for (const backlinkKey of note.backlinks) {
+            makeJumpButton(backlinkKey, "reversebuttons", pane);
+        }
     }
 }
 
@@ -613,6 +821,9 @@ function openSplitView(initialKey) {
     const splitBtn = document.getElementById("split-view-btn");
     if (splitBtn) splitBtn.innerText = "Close Split";
 
+    const leftLabel = document.getElementById("pane-label-left");
+    if (leftLabel) leftLabel.innerText = "Left:";
+
     populateKeyList();
 
     // Determine starting key for right pane
@@ -631,7 +842,8 @@ function openSplitView(initialKey) {
         }
     }
 
-    showRightObj(chosenKey);
+    showRightObj(chosenKey, false);
+    updateLinksColumn();
 }
 
 function closeSplitView() {
@@ -647,10 +859,18 @@ function closeSplitView() {
 
     if (resizerSplit) resizerSplit.style.display = "none";
     if (colRight) colRight.style.display = "none";
-    if (colLeft) colLeft.style.flex = "1 1 0";
+    if (colLeft) {
+        colLeft.style.flex = "1 1 0";
+    }
 
     const splitBtn = document.getElementById("split-view-btn");
     if (splitBtn) splitBtn.innerText = "Split View";
+
+    const leftLabel = document.getElementById("pane-label-left");
+    if (leftLabel) leftLabel.innerText = "Note:";
+
+    setActivePane("left");
+    updateLinksColumn();
 }
 
 function toggleSplitView() {
@@ -661,16 +881,33 @@ function toggleSplitView() {
     }
 }
 
-function showRightObj(key) {
+function showLeftObj(key, saveCurrent = true) {
+    showObj(key, saveCurrent);
+}
+
+function showLeftObjFromInput() {
+    const keyField = document.getElementById("zkey");
+    if (!keyField) return;
+    const key = keyField.value.trim();
+    if (key) {
+        showObj(key);
+    }
+}
+
+function showRightObj(key, saveCurrent = true) {
     if (!key) return;
 
-    if (JSZ.data.rightKey && JSZ.data.rightKey !== key) {
+    if (saveCurrent && JSZ.data.rightKey && JSZ.data.rightKey !== key) {
         saveRightObj();
     }
 
     if (!JSZ.dataManager.zettelExists(key)) {
         makeEmpty(key);
     }
+
+    const note = JSZ.data.zettel[key];
+    note.backlinks = sortuniq(note.backlinks);
+    note.links = (note.links || []).filter(l => l !== "nolinksout");
 
     JSZ.data.rightKey = key;
 
@@ -682,16 +919,22 @@ function showRightObj(key) {
     const keyField = document.getElementById("zkey-right");
     if (keyField) keyField.value = key;
 
-    const note = JSZ.data.zettel[key];
+    const nameField = document.getElementById("zname-right");
+    if (nameField) nameField.value = note?.name || "";
+
+    const dateField = document.getElementById("zdate-right");
+    if (dateField) dateField.value = note?.creation || "";
+
     const editor = document.getElementById("zcontent-right");
     if (editor) editor.value = note?.content || "";
 
     const preview = document.getElementById("zcontent-preview-right");
     if (preview && JSZ.uiManager.isRightPreviewMode) {
-        preview.innerHTML = renderMarkdown(note?.content || "");
+        preview.innerHTML = renderMarkdown(note?.content || "", "right");
     }
 
     populateKeyList();
+    updateLinksColumn();
 }
 
 function showRightObjFromInput() {
@@ -701,6 +944,10 @@ function showRightObjFromInput() {
     if (key) {
         showRightObj(key);
     }
+}
+
+function saveLeftObj() {
+    readObj();
 }
 
 function saveRightObj() {
@@ -714,45 +961,22 @@ function saveRightObj() {
     JSZ.data.zettel[key].links = findLinks(newContent);
     JSZ.data.zettel[key].fileLinks = findFileLinks(newContent);
 
+    const nameField = document.getElementById("zname-right");
+    if (nameField) {
+        JSZ.data.zettel[key].name = nameField.value;
+    }
+
     cleanBackList();
     JSZ.storageManager.saveToLocalStorage();
-
-    if (JSZ.data.currentKey) {
-        const leftKey = JSZ.data.currentKey;
-        const forwardDiv = document.getElementById("forwardbuttons");
-        if (forwardDiv && JSZ.data.zettel[leftKey]) {
-            forwardDiv.innerHTML = "";
-            for (const lk of (JSZ.data.zettel[leftKey].links || [])) {
-                makeJumpButton(lk, "forwardbuttons");
-            }
-        }
-        const reverseDiv = document.getElementById("reversebuttons");
-        if (reverseDiv && JSZ.data.zettel[leftKey]) {
-            reverseDiv.innerHTML = "";
-            for (const bk of (JSZ.data.zettel[leftKey].backlinks || [])) {
-                makeJumpButton(bk, "reversebuttons");
-            }
-        }
-    }
+    populateKeyList();
+    updateLinksColumn();
 }
 
-function toggleRightPreviewMode() {
-    const previewBtn = document.getElementById("preview-toggle-btn-right");
-    const editor = document.getElementById("zcontent-right");
-    const preview = document.getElementById("zcontent-preview-right");
-    if (!editor || !preview) return;
-
-    JSZ.uiManager.isRightPreviewMode = !JSZ.uiManager.isRightPreviewMode;
-
-    if (JSZ.uiManager.isRightPreviewMode) {
-        if (previewBtn) previewBtn.innerText = "Edit";
-        editor.style.display = "none";
-        preview.style.display = "block";
-        preview.innerHTML = renderMarkdown(editor.value);
+function saveActiveObj() {
+    if (JSZ.uiManager.isSplitActive && JSZ.data.activePane === "right") {
+        saveRightObj();
     } else {
-        if (previewBtn) previewBtn.innerText = "Preview";
-        preview.style.display = "none";
-        editor.style.display = "block";
+        saveLeftObj();
     }
 }
 
@@ -773,9 +997,12 @@ function readObjNoShow() {
     const key = keyField.value.trim();
     if (!key) return;
 
-    const name = document.getElementById("zname").value;
-    const content = document.getElementById("zcontent").value;
-    const creation = document.getElementById("zdate").value || new Date().toISOString().substring(0, 10);
+    const nameField = document.getElementById("zname");
+    const name = nameField ? nameField.value : "";
+    const contentField = document.getElementById("zcontent");
+    const content = contentField ? contentField.value : "";
+    const dateField = document.getElementById("zdate");
+    const creation = (dateField && dateField.value) ? dateField.value : new Date().toISOString().substring(0, 10);
     const existing = JSZ.data.zettel[key];
     const backlinks = existing ? (existing.backlinks || []) : [];
 
@@ -795,7 +1022,8 @@ function readObjNoShow() {
 }
 
 function readObj() {
-    const key = document.getElementById("zkey").value.trim();
+    const keyField = document.getElementById("zkey");
+    const key = keyField ? keyField.value.trim() : "";
     readObjNoShow();
     if (key) showObj(key, false);
 }
@@ -814,59 +1042,50 @@ function showObj(key, saveCurrent = true) {
     note.links = (note.links || []).filter(l => l !== "nolinksout");
 
     // Populate UI fields
-    document.getElementById("zkey").value = key;
-    document.getElementById("zname").value = note.name || "";
-    document.getElementById("zcontent").value = note.content || "";
-    document.getElementById("nextz").value = JSZ.data.currentKey || "top";
-    document.getElementById("zdate").value = note.creation || "";
-    document.getElementById("zcount").value = Object.keys(JSZ.data.zettel).length;
+    const keyField = document.getElementById("zkey");
+    if (keyField) keyField.value = key;
+    const nameField = document.getElementById("zname");
+    if (nameField) nameField.value = note.name || "";
+    const contentField = document.getElementById("zcontent");
+    if (contentField) contentField.value = note.content || "";
+    const nextField = document.getElementById("nextz");
+    if (nextField) nextField.value = JSZ.data.currentKey || "top";
+    const dateField = document.getElementById("zdate");
+    if (dateField) dateField.value = note.creation || "";
+    const countField = document.getElementById("zcount");
+    if (countField) countField.value = Object.keys(JSZ.data.zettel).length;
 
     if (JSZ.uiManager.isPreviewMode) {
-        document.getElementById("zcontent-preview").innerHTML = renderMarkdown(note.content || "");
+        const preview = document.getElementById("zcontent-preview");
+        if (preview) preview.innerHTML = renderMarkdown(note.content || "", "left");
     }
 
     JSZ.data.currentKey = key;
 
-    // Outgoing links
-    const forwardDiv = document.getElementById("forwardbuttons");
-    forwardDiv.innerHTML = "";
-    if (note.links && note.links.length > 0) {
-        for (const linkKey of note.links) {
-            makeJumpButton(linkKey, "forwardbuttons");
-        }
-    }
-
-    // Outgoing file / URL links
-    if (note.fileLinks && note.fileLinks.length > 0) {
-        if (note.links && note.links.length > 0) {
-            const hr = document.createElement("hr");
-            hr.className = "link-divider";
-            forwardDiv.appendChild(hr);
-        }
-        for (const url of note.fileLinks) {
-            makeExternalLinkButton(url, "forwardbuttons");
-        }
-    }
-
-    // Incoming links (backlinks)
-    const reverseDiv = document.getElementById("reversebuttons");
-    reverseDiv.innerHTML = "";
-    if (note.backlinks && note.backlinks.length > 0) {
-        for (const backlinkKey of note.backlinks) {
-            makeJumpButton(backlinkKey, "reversebuttons");
-        }
-    }
-
+    populateKeyList();
+    updateLinksColumn();
     JSZ.storageManager.saveToLocalStorage();
 }
 
 function showNextObj() {
-    const next = document.getElementById("nextz").value.trim();
-    if (next) showObj(next);
+    const nextInput = document.getElementById("nextz");
+    if (!nextInput) return;
+    const next = nextInput.value.trim();
+    if (!next) return;
+
+    if (JSZ.uiManager.isSplitActive && JSZ.data.activePane === "right") {
+        showRightObj(next);
+    } else {
+        showObj(next);
+    }
 }
 
 function jumpTop() {
-    showObj("top");
+    if (JSZ.uiManager.isSplitActive && JSZ.data.activePane === "right") {
+        showRightObj("top");
+    } else {
+        showObj("top");
+    }
 }
 
 // ============================================================================
@@ -889,7 +1108,7 @@ function searchZettelForRegex() {
         for (const key of Object.keys(JSZ.data.zettel)) {
             const note = JSZ.data.zettel[key];
             if (re.test(key) || (note.name && re.test(note.name))) {
-                makeJumpButton(key, "searchresults");
+                makeJumpButton(key, "searchresults", JSZ.data.activePane || "left");
                 matches++;
             }
         }
@@ -916,7 +1135,7 @@ function searchZettelContent() {
     for (const key of Object.keys(JSZ.data.zettel)) {
         const note = JSZ.data.zettel[key];
         if (note.content && re.test(note.content)) {
-            makeJumpButton(key, "searchresults");
+            makeJumpButton(key, "searchresults", JSZ.data.activePane || "left");
             matches++;
         }
     }
@@ -958,10 +1177,10 @@ function hideTooltip() {
 // ============================================================================
 
 document.addEventListener("keydown", function(e) {
-    // Ctrl+P / Cmd+P -> Parse & Save
+    // Ctrl+P / Cmd+P -> Save active pane
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
         e.preventDefault();
-        readObj();
+        saveActiveObj();
     }
     // Ctrl+S / Cmd+S -> Download JSON
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
@@ -1129,6 +1348,18 @@ document.addEventListener("DOMContentLoaded", function() {
     // Initialize draggable split and height resizers
     initResizeHandlers();
 
+    // Attach active-pane tracking to pane columns
+    const colLeft = document.getElementById("col2");
+    if (colLeft) {
+        colLeft.addEventListener("focusin", function() { setActivePane("left"); });
+        colLeft.addEventListener("click", function() { setActivePane("left"); });
+    }
+    const colRight = document.getElementById("col-right");
+    if (colRight) {
+        colRight.addEventListener("focusin", function() { setActivePane("right"); });
+        colRight.addEventListener("click", function() { setActivePane("right"); });
+    }
+
     // Load from localStorage if present, otherwise default sample data
     const stored = localStorage.getItem("snapshot");
     if (stored) {
@@ -1156,10 +1387,24 @@ if (typeof module !== "undefined" && module.exports) {
         renderMarkdown,
         getZettelTooltip,
         renameZettel,
+        renamePaneZettel,
+        renameLeftZettel,
+        renameRightZettel,
+        deletePaneZettel,
+        deleteLeftZettel,
+        deleteRightZettel,
         openSplitView,
         closeSplitView,
         toggleSplitView,
+        showLeftObj,
+        showLeftObjFromInput,
         showRightObj,
-        saveRightObj
+        showRightObjFromInput,
+        saveLeftObj,
+        saveRightObj,
+        saveActiveObj,
+        setActivePane,
+        switchLinksTab,
+        updateLinksColumn
     };
 }
