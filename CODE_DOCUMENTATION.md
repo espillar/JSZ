@@ -14,8 +14,6 @@ The application's state and data are managed under the `JSZ` global object.
 This object holds the core state of the application.
 *   **`JSZ.data.zettel`**: A dictionary-like object mapping unique Zettel keys (IDs) to their respective data objects.
 *   **`JSZ.data.currentKey`**: A string indicating the key of the Zettel currently being viewed.
-*   **`JSZ.data.stash`**: Used to temporarily store a copy of the current Zettel before editing.
-*   **`JSZ.data.rawFileInput`**: A temporary buffer used when loading data from a JSON file.
 
 ### A Zettel Object
 Each note in `JSZ.data.zettel` has the following structure:
@@ -35,9 +33,14 @@ Each note in `JSZ.data.zettel` has the following structure:
 The functionality in `jsz4.js` is divided into logical sub-managers under the `JSZ` namespace, alongside various global utility functions.
 
 ### `JSZ.uiManager`
-Manages the user interface state, particularly dynamic styling like font sizes.
+Manages the user interface state, dynamic styling, and view modes.
 *   `increaseFontSize()` / `decreaseFontSize()`: Adjusts the base font size up or down.
 *   `updatePageFontSize(sizeInPt)`: Applies the new font size to the document body.
+*   `togglePreviewMode()`: Toggles the primary (left) editor between raw text and rendered Markdown.
+*   `toggleSplitView()` / `openSplitView(key)` / `closeSplitView()`: Toggles the secondary document pane on the right.
+*   `showRightObj(key)`: Displays a distinct Zettel in the right document pane.
+*   `saveRightObj()`: Saves edits made inside the right document pane, updates links, and rebuilds backlinks.
+*   `toggleRightPreviewMode()`: Toggles Markdown preview for the right pane.
 
 ### `JSZ.storageManager`
 Handles data persistence.
@@ -52,6 +55,8 @@ These functions handle the core Zettelkasten logic, such as navigating, creating
 *   **`readObj()`**: A wrapper that calls `readObjNoShow()` and then immediately refreshes the UI by calling `showObj()`.
 *   **`makeEmpty(key)`**: Initializes a new, empty Zettel object in memory with the given key, pointing to the current date.
 *   **`deleteCurrentZettel()`**: Prompts for confirmation, deletes the active Zettel from memory, cleans up any links pointing to it from other Zettels, and falls back to showing the "top" Zettel.
+*   **`renameZettel(oldKey, newKey)`**: Renames a Zettel from `oldKey` to `newKey`. Automatically updates all references (`[[oldKey]]` -> `[[newKey]]`) in content and link lists across the entire Zettelkasten, rebuilds backlinks, and refreshes the view.
+*   **`renameCurrentZettel()`**: Saves any pending edits in the active editor, prompts the user for a new key, and executes `renameZettel`.
 *   **`resetToZstring()`**: Resets the entire application state back to the default sample data defined in the `zstring` variable.
 
 ### Link Management
@@ -74,4 +79,4 @@ Key UI elements in `JSZ4.html` map directly to Javascript logic:
 *   `zkey` textarea: Contains the ID of the current Zettel.
 *   `zname` textarea: Contains the Tags of the current Zettel.
 *   `zcontent` textarea: The main editor area.
-*   Keyboard shortcuts: `Ctrl+P` (Parse/Save), `Ctrl+S` (Save to JSON), `Ctrl+T` (Jump to Top) are bound via `document.onkeyup`.
+*   Keyboard shortcuts: `Ctrl+P`/`Cmd+P` (Parse & Save), `Ctrl+S`/`Cmd+S` (Save to JSON), `Ctrl+T`/`Cmd+T` (Jump to Top), and `Escape` (Close modals/sidebar).

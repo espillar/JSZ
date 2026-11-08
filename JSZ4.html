@@ -1,6 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <script src="jsz4.js"> </script>  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSZ4 - Zettelkasten</title>
+  <script src="jsz4.js"></script>  
   <link id="theme-stylesheet" rel="stylesheet" type="text/css" href="JSZ4_gray_v2.css">
 </head>
 
@@ -14,14 +18,14 @@
     <h3>Appearance</h3>
     <button onclick="JSZ.uiManager.increaseFontSize()">Larger Font (+)</button>
     <button onclick="JSZ.uiManager.decreaseFontSize()">Smaller Font (-)</button>
-    <button onclick="document.getElementById('theme-stylesheet').href = 'JSZ4_solarized_v2.css'; closeSettings();">Solarized Theme</button>
-    <button onclick="document.getElementById('theme-stylesheet').href = 'JSZ4_gray_v2.css'; closeSettings();">Gray Theme</button>
+    <button onclick="setSolarizedTheme()">Solarized Theme</button>
+    <button onclick="setGrayTheme()">Gray Theme</button>
     <br><br>
 
     <h3>Data Management</h3>
-    <button onclick="JSZ.storageManager.saveToLocalStorage()"> Save to Browser </button>
-    <button onclick="JSZ.storageManager.loadFromLocalStorage()"> Load from Browser </button>
-    <button onclick="download(JSON.stringify(JSZ.data.zettel))">Download JSON</button> 
+    <button onclick="JSZ.storageManager.saveToLocalStorage()">Save to Browser</button>
+    <button onclick="JSZ.storageManager.loadFromLocalStorage()">Load from Browser</button>
+    <button onclick="download()">Download JSON</button> 
     <br><br>
     <label for="inputJSON" style="font: 0.8em 'Fira Sans', sans-serif;">Load JSON File:</label>
     <input type="file" id="inputJSON" onchange="pullfiles()">
@@ -39,6 +43,8 @@
     <button onclick="openSearchSidebar()">Search</button>
     <button onclick="readObj()" class="save-btn">Parse & Save</button>
     <button id="preview-toggle-btn" onclick="togglePreviewMode()">Preview</button>
+    <button id="split-view-btn" onclick="toggleSplitView()">Split View</button>
+    <button onclick="renameCurrentZettel()">Rename</button>
     <button onclick="openSettings()">Settings</button>
     <button onclick="deleteCurrentZettel()" class="delete-btn">Delete</button>
   </div>
@@ -47,12 +53,12 @@
 <!-- Zettel Metadata -->
 <div class="metadata-row">
   <div class="input-group">
-    <label>Key</label>
-    <input type="text" id="zkey" value="Current Zettel">
+    <label for="zkey">Key</label>
+    <input type="text" id="zkey" placeholder="Key">
   </div>
   <div class="input-group tags-group">
-    <label>Tags</label>
-    <input type="text" id="zname" value="Enter tags here">
+    <label for="zname">Tags</label>
+    <input type="text" id="zname" placeholder="Enter tags here">
   </div>
 </div>
 
@@ -63,31 +69,55 @@
   
   <div class="sidebar-action-col">
     <div class="search-group vertical">
-      <label>Go to Zettel:</label>
-      <input type="text" id="nextz" value="top">
+      <label for="nextz">Go to Zettel:</label>
+      <input type="text" id="nextz" placeholder="Zettel key">
       <button onclick="showNextObj()">Go</button>
     </div>
     <hr style="width: 100%; border-color: #555;">
     <div class="search-group vertical">
-      <label>Search Tags:</label>
+      <label for="searchRegEx">Search Tags:</label>
       <input type="text" id="searchRegEx" placeholder="Regex allowed">
       <button onclick="searchZettelForRegex()">Search</button>
     </div>
     <div class="search-group vertical">
-      <label>Search Content:</label>
+      <label for="searchFullText">Search Content:</label>
       <input type="text" id="searchFullText" placeholder="Literal search">
       <button onclick="searchZettelContent()">Search</button>
     </div>
     <hr style="width: 100%; border-color: #555;">
-    <div id='searchresults'>Search Results</div>
+    <div id="searchresults">Search Results</div>
   </div>
 </div>
 
 <div class="wrapper">
+  <!-- Left Editor Column -->
   <div id="col2" class="editor-col">
-    <textarea id="zcontent">Current Zettel content</textarea>
+    <textarea id="zcontent" placeholder="Zettel content"></textarea>
     <div id="zcontent-preview" style="display: none;"></div>
   </div>
+
+  <!-- Right / Secondary Document Column -->
+  <div id="col-right" class="editor-col secondary-editor-col" style="display: none;">
+    <div class="secondary-header">
+      <div class="secondary-nav">
+        <label for="zkey-right"><strong>Right:</strong></label>
+        <input type="text" id="zkey-right" list="zettel-keys-list" placeholder="Select or type key...">
+        <datalist id="zettel-keys-list"></datalist>
+        <button onclick="showRightObjFromInput()">Go</button>
+      </div>
+      <div class="secondary-actions">
+        <button id="preview-toggle-btn-right" onclick="toggleRightPreviewMode()">Preview</button>
+        <button onclick="saveRightObj()" class="save-btn">Save</button>
+        <button onclick="closeSplitView()" class="close-split-btn" title="Close Split View">&times;</button>
+      </div>
+    </div>
+    <div class="secondary-content-wrap">
+      <textarea id="zcontent-right" placeholder="Right Zettel content"></textarea>
+      <div id="zcontent-preview-right" style="display: none;"></div>
+    </div>
+  </div>
+
+  <!-- Links Column -->
   <div class="links-col">
     <div class="link-section">
       <h3>Outgoing Links</h3>
@@ -102,18 +132,9 @@
 </div>
 
 <div class="status-bar">
-  <span>Date Created: <input type="text" id="zdate" class="status-input" value="Creation Date" readonly></span>
-  <span>Total Zettels: <input type="text" id="zcount" class="status-input" value="Zettels" readonly></span>
+  <span>Date Created: <input type="text" id="zdate" class="status-input" readonly></span>
+  <span>Total Zettels: <input type="text" id="zcount" class="status-input" readonly></span>
 </div>
 
-<!-- Close modal script -->
-<script>
-window.onclick = function(event) {
-  var modal = document.getElementById('settings-modal');
-  if (event.target == modal) {
-    modal.style.display = "none";
-  }
-}
-</script>
-
-</body> </html>
+</body>
+</html>
